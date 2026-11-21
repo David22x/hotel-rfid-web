@@ -1,0 +1,13 @@
+# Credenciales locales (cada quien tiene la suya)
+app/config/config.php
+
+# Logs y archivos de editores
+*.log
+.idea/
+nbproject/private/
+nbactions.xml
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
