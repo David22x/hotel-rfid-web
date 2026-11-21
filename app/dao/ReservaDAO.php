@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../model/Reserva.php';
+require_once __DIR__ . '/../core/Database.php';
 
 class ReservaDAO
 {
@@ -43,21 +44,48 @@ class ReservaDAO
      */
     public function hayCruce(int $habitacionId, string $entrada, string $salida, ?int $excluirReservaId = null): bool
     {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
+        $consulta = Database::conectar()->prepare(
+            "SELECT EXISTS (
+                 SELECT 1 FROM reserva
+                 WHERE habitacion_id = ? AND estado IN (?, ?)
+                   AND fecha_entrada < ? AND fecha_salida > ?
+                   AND (? IS NULL OR id <> ?)
+             )"
+        );
+        $consulta->execute([
+            $habitacionId,
+            EstadoReserva::PENDIENTE,
+            EstadoReserva::ACTIVA,
+            $salida,
+            $entrada,
+            $excluirReservaId,
+            $excluirReservaId,
+        ]);
+
+        return (bool) $consulta->fetchColumn();
     }
 
     public function existenPorHabitacion(int $habitacionId): bool
     {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
+        $consulta = Database::conectar()->prepare('SELECT EXISTS (SELECT 1 FROM reserva WHERE habitacion_id = ?)');
+        $consulta->execute([$habitacionId]);
+
+        return (bool) $consulta->fetchColumn();
     }
 
     public function existenPorHuesped(int $huespedId): bool
     {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
+        $consulta = Database::conectar()->prepare('SELECT EXISTS (SELECT 1 FROM reserva WHERE huesped_id = ?)');
+        $consulta->execute([$huespedId]);
+
+        return (bool) $consulta->fetchColumn();
     }
 
     public function existeActivaPorHabitacion(int $habitacionId): bool
     {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
+        $consulta = Database::conectar()->prepare('SELECT EXISTS (SELECT 1 FROM reserva WHERE habitacion_id = ? AND estado = ?)');
+        $consulta->execute([$habitacionId, EstadoReserva::ACTIVA]);
+
+        return (bool) $consulta->fetchColumn();
     }
 }
