@@ -3,16 +3,16 @@
 // Variables que llegan desde HuespedController:
 //   $titulo, $error (?string), $datos (array con nombre, documento, correo, telefono)
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= htmlspecialchars($titulo) ?></title>
-    <link rel="stylesheet" href="assets/css/estilo.css">
-</head>
-<body>
-<div class="contenedor estrecho">
+<?php
+// Petición AJAX (desde el modal): se devuelve solo el formulario, sin el layout.
+$esModal = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
+if (!$esModal) {
+    $tituloPagina = $titulo;
+    $activo = 'huespedes';
+    $estrecho = true;
+    require __DIR__ . '/../layout/inicio.php';
+}
+?>
     <h1><?= htmlspecialchars($titulo) ?></h1>
 
     <?php if ($error): ?>
@@ -20,7 +20,7 @@
     <?php endif; ?>
 
     <!-- action vacío = se envía a la misma URL (incluye ?accion=... y &id=...) -->
-    <form method="post" action="">
+    <form method="post" action="" data-modal-form>
         <div class="campo">
             <label for="nombre">Nombre</label>
             <input type="text" id="nombre" name="nombre" value="<?= htmlspecialchars($datos['nombre']) ?>">
@@ -38,10 +38,8 @@
             <input type="text" id="telefono" name="telefono" value="<?= htmlspecialchars($datos['telefono']) ?>">
         </div>
         <div class="botones">
-            <a href="huespedes.php" class="btn">Cancelar</a>
+            <a href="huespedes.php" class="btn" data-cerrar>Cancelar</a>
             <button type="submit" class="primario">Aceptar</button>
         </div>
     </form>
-</div>
-</body>
-</html>
+<?php if (!$esModal) require __DIR__ . '/../layout/fin.php'; ?>

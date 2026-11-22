@@ -4,16 +4,16 @@
 //   $titulo, $esNueva (bool), $error (?string),
 //   $datos (array con numero, piso, tipo, estado)
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= htmlspecialchars($titulo) ?></title>
-    <link rel="stylesheet" href="assets/css/estilo.css">
-</head>
-<body>
-<div class="contenedor estrecho">
+<?php
+// Petición AJAX (desde el modal): se devuelve solo el formulario, sin el layout.
+$esModal = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
+if (!$esModal) {
+    $tituloPagina = $titulo;
+    $activo = 'habitaciones';
+    $estrecho = true;
+    require __DIR__ . '/../layout/inicio.php';
+}
+?>
     <h1><?= htmlspecialchars($titulo) ?></h1>
 
     <?php if ($error): ?>
@@ -21,7 +21,7 @@
     <?php endif; ?>
 
     <!-- action vacío = se envía a la misma URL (incluye ?accion=... y &id=...) -->
-    <form method="post" action="">
+    <form method="post" action="" data-modal-form>
         <div class="campo">
             <label for="numero">Número</label>
             <input type="text" id="numero" name="numero" value="<?= htmlspecialchars($datos['numero']) ?>">
@@ -48,10 +48,8 @@
             </select>
         </div>
         <div class="botones">
-            <a href="habitaciones.php" class="btn">Cancelar</a>
+            <a href="habitaciones.php" class="btn" data-cerrar>Cancelar</a>
             <button type="submit" class="primario">Aceptar</button>
         </div>
     </form>
-</div>
-</body>
-</html>
+<?php if (!$esModal) require __DIR__ . '/../layout/fin.php'; ?>

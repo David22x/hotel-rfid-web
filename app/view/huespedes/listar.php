@@ -2,16 +2,11 @@
 // Variables que llegan desde HuespedController::listar():
 //   $huespedes (Huesped[]), $termino (string), $mensaje (?string), $error (?string)
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Huéspedes</title>
-    <link rel="stylesheet" href="assets/css/estilo.css">
-</head>
-<body>
-<div class="contenedor">
+<?php
+$tituloPagina = 'Huéspedes';
+$activo = 'huespedes';
+require __DIR__ . '/../layout/inicio.php';
+?>
     <h1>Huéspedes</h1>
 
     <?php if ($mensaje): ?>
@@ -29,7 +24,7 @@
             <button type="submit">Buscar</button>
             <a href="huespedes.php">Limpiar</a>
         </form>
-        <a href="huespedes.php?accion=crear" class="btn btn-primario">+ Crear</a>
+        <a href="huespedes.php?accion=crear" class="btn btn-primario" data-modal>+ Crear</a>
     </div>
 
     <table>
@@ -52,7 +47,7 @@
                 <td><?= htmlspecialchars($h->correo) ?></td>
                 <td><?= htmlspecialchars($h->telefono) ?></td>
                 <td class="acciones">
-                    <a href="huespedes.php?accion=editar&id=<?= $h->id ?>" class="btn btn-sm">Editar</a>
+                    <a href="huespedes.php?accion=editar&id=<?= $h->id ?>" class="btn btn-sm" data-modal>Editar</a>
                     <form method="post" action="huespedes.php?accion=eliminar"
                           onsubmit="return confirm('¿Eliminar este huésped?')">
                         <input type="hidden" name="id" value="<?= $h->id ?>">
@@ -67,6 +62,4 @@
     <?php if (count($huespedes) === 0): ?>
         <p class="vacio">No hay huéspedes registrados.</p>
     <?php endif; ?>
-</div>
-</body>
-</html>
+<?php require __DIR__ . '/../layout/fin.php'; ?>

@@ -96,3 +96,39 @@ td.acciones form { display: inline; }
     .contenedor { padding: 16px; }
     table { display: block; overflow-x: auto; }
 }
+
+/* ---------- Menú lateral ---------- */
+body { padding: 0; }
+.app { display: flex; min-height: 100vh; }
+.menu {
+    width: 210px; flex-shrink: 0;
+    background: var(--tarjeta);
+    border-right: 1px solid var(--borde);
+    padding: 24px 12px;
+}
+.menu-marca { font-weight: 600; font-size: 1.1rem; padding: 0 12px 20px; }
+.menu nav a {
+    display: block; padding: 9px 12px; margin-bottom: 4px;
+    border-radius: 6px; color: var(--texto);
+}
+.menu nav a:hover { background: var(--fondo); text-decoration: none; }
+.menu nav a.activo { background: #eff6ff; color: var(--primario); font-weight: 500; }
+.contenido { flex: 1; min-width: 0; padding: 32px 24px; }
+
+/* ---------- Modal ---------- */
+dialog {
+    border: 1px solid var(--borde); border-radius: 10px;
+    padding: 24px 28px; width: min(460px, calc(100vw - 32px));
+    color: var(--texto);
+}
+dialog::backdrop { background: rgba(17, 24, 39, .4); }
+dialog h1 { font-size: 1.25rem; }
+
+@media (max-width: 640px) {
+    .app { flex-direction: column; }
+    .menu { width: auto; border-right: 0; border-bottom: 1px solid var(--borde); padding: 12px; }
+    .menu-marca { padding-bottom: 8px; }
+    .menu nav { display: flex; gap: 4px; }
+    .menu nav a { margin: 0; }
+    .contenido { padding: 16px; }
+}

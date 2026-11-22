@@ -3,19 +3,19 @@
 // Variables que llegan desde HabitacionController::cambiarEstado():
 //   $habitacion (Habitacion)
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cambiar estado</title>
-    <link rel="stylesheet" href="assets/css/estilo.css">
-</head>
-<body>
-<div class="contenedor estrecho">
+<?php
+// Petición AJAX (desde el modal): se devuelve solo el formulario, sin el layout.
+$esModal = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
+if (!$esModal) {
+    $tituloPagina = 'Cambiar estado';
+    $activo = 'habitaciones';
+    $estrecho = true;
+    require __DIR__ . '/../layout/inicio.php';
+}
+?>
     <h1>Estado de la habitación <?= htmlspecialchars($habitacion->numero) ?></h1>
 
-    <form method="post" action="">
+    <form method="post" action="" data-modal-form>
         <div class="campo">
             <label for="estado">Nuevo estado</label>
             <select id="estado" name="estado">
@@ -25,10 +25,8 @@
             </select>
         </div>
         <div class="botones">
-            <a href="habitaciones.php" class="btn">Cancelar</a>
+            <a href="habitaciones.php" class="btn" data-cerrar>Cancelar</a>
             <button type="submit" class="primario">Aceptar</button>
         </div>
     </form>
-</div>
-</body>
-</html>
+<?php if (!$esModal) require __DIR__ . '/../layout/fin.php'; ?>
