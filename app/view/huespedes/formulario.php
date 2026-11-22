@@ -7,41 +7,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($titulo) ?></title>
-    <style>
-        .error { color: red; }
-        label { display: inline-block; width: 90px; }
-    </style>
+    <link rel="stylesheet" href="assets/css/estilo.css">
 </head>
 <body>
+<div class="contenedor estrecho">
     <h1><?= htmlspecialchars($titulo) ?></h1>
 
     <?php if ($error): ?>
-        <p class="error"><?= htmlspecialchars($error) ?></p>
+        <div class="alerta error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
     <!-- action vacío = se envía a la misma URL (incluye ?accion=... y &id=...) -->
     <form method="post" action="">
-        <p>
-            <label for="nombre">Nombre:</label>
+        <div class="campo">
+            <label for="nombre">Nombre</label>
             <input type="text" id="nombre" name="nombre" value="<?= htmlspecialchars($datos['nombre']) ?>">
-        </p>
-        <p>
-            <label for="documento">Documento:</label>
+        </div>
+        <div class="campo">
+            <label for="documento">Documento</label>
             <input type="text" id="documento" name="documento" value="<?= htmlspecialchars($datos['documento']) ?>">
-        </p>
-        <p>
-            <label for="correo">Correo:</label>
+        </div>
+        <div class="campo">
+            <label for="correo">Correo</label>
             <input type="text" id="correo" name="correo" value="<?= htmlspecialchars($datos['correo']) ?>">
-        </p>
-        <p>
-            <label for="telefono">Teléfono:</label>
+        </div>
+        <div class="campo">
+            <label for="telefono">Teléfono</label>
             <input type="text" id="telefono" name="telefono" value="<?= htmlspecialchars($datos['telefono']) ?>">
-        </p>
-        <p>
-            <a href="huespedes.php">Cancelar</a>
-            <button type="submit">Aceptar</button>
-        </p>
+        </div>
+        <div class="botones">
+            <a href="huespedes.php" class="btn">Cancelar</a>
+            <button type="submit" class="primario">Aceptar</button>
+        </div>
     </form>
+</div>
 </body>
 </html>

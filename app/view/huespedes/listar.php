@@ -6,46 +6,44 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Huéspedes</title>
-    <style>
-        table { border-collapse: collapse; }
-        th, td { border: 1px solid #999; padding: 6px 10px; }
-        .mensaje { color: green; }
-        .error { color: red; }
-    </style>
+    <link rel="stylesheet" href="assets/css/estilo.css">
 </head>
 <body>
+<div class="contenedor">
     <h1>Huéspedes</h1>
 
     <?php if ($mensaje): ?>
-        <p class="mensaje"><?= htmlspecialchars($mensaje) ?></p>
+        <div class="alerta ok"><?= htmlspecialchars($mensaje) ?></div>
     <?php endif; ?>
     <?php if ($error): ?>
-        <p class="error"><?= htmlspecialchars($error) ?></p>
+        <div class="alerta error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- Búsqueda: un formulario GET pone ?buscar=... en la URL -->
-    <form method="get" action="huespedes.php">
-        <label for="buscar">Buscar (nombre o documento):</label>
-        <input type="text" id="buscar" name="buscar" value="<?= htmlspecialchars($termino) ?>">
-        <button type="submit">Buscar</button>
-        <a href="huespedes.php">Limpiar búsqueda</a>
-    </form>
-
-    <p>
-        <a href="huespedes.php?accion=crear">Crear</a> |
-        <a href="huespedes.php">Refrescar</a>
-    </p>
+    <div class="barra">
+        <!-- Búsqueda: un formulario GET pone ?buscar=... en la URL -->
+        <form method="get" action="huespedes.php">
+            <input type="text" id="buscar" name="buscar" placeholder="Nombre o documento"
+                   value="<?= htmlspecialchars($termino) ?>">
+            <button type="submit">Buscar</button>
+            <a href="huespedes.php">Limpiar</a>
+        </form>
+        <a href="huespedes.php?accion=crear" class="btn btn-primario">+ Crear</a>
+    </div>
 
     <table>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Documento</th>
-            <th>Correo</th>
-            <th>Teléfono</th>
-            <th>Acciones</th>
-        </tr>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Documento</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
         <?php foreach ($huespedes as $h): ?>
             <tr>
                 <td><?= $h->id ?></td>
@@ -53,16 +51,22 @@
                 <td><?= htmlspecialchars($h->documento) ?></td>
                 <td><?= htmlspecialchars($h->correo) ?></td>
                 <td><?= htmlspecialchars($h->telefono) ?></td>
-                <td>
-                    <a href="huespedes.php?accion=editar&id=<?= $h->id ?>">Editar</a>
-                    <form method="post" action="huespedes.php?accion=eliminar" style="display:inline"
+                <td class="acciones">
+                    <a href="huespedes.php?accion=editar&id=<?= $h->id ?>" class="btn btn-sm">Editar</a>
+                    <form method="post" action="huespedes.php?accion=eliminar"
                           onsubmit="return confirm('¿Eliminar este huésped?')">
                         <input type="hidden" name="id" value="<?= $h->id ?>">
-                        <button type="submit">Eliminar</button>
+                        <button type="submit" class="btn-sm btn-peligro">Eliminar</button>
                     </form>
                 </td>
             </tr>
         <?php endforeach; ?>
+        </tbody>
     </table>
+
+    <?php if (count($huespedes) === 0): ?>
+        <p class="vacio">No hay huéspedes registrados.</p>
+    <?php endif; ?>
+</div>
 </body>
 </html>

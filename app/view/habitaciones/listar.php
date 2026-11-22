@@ -6,61 +6,63 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Habitaciones</title>
-    <style>
-        table { border-collapse: collapse; }
-        th, td { border: 1px solid #999; padding: 6px 10px; }
-        .mensaje { color: green; }
-        .error { color: red; }
-    </style>
+    <link rel="stylesheet" href="assets/css/estilo.css">
 </head>
 <body>
+<div class="contenedor">
     <h1>Habitaciones</h1>
 
     <?php if ($mensaje): ?>
-        <p class="mensaje"><?= htmlspecialchars($mensaje) ?></p>
+        <div class="alerta ok"><?= htmlspecialchars($mensaje) ?></div>
     <?php endif; ?>
     <?php if ($error): ?>
-        <p class="error"><?= htmlspecialchars($error) ?></p>
+        <div class="alerta error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <p>
-        <a href="habitaciones.php?accion=crear">Crear</a> |
-        <a href="habitaciones.php">Refrescar</a>
-    </p>
+    <div class="barra">
+        <a href="habitaciones.php?accion=crear" class="btn btn-primario">+ Crear</a>
+        <a href="habitaciones.php" class="btn">Refrescar</a>
+    </div>
 
     <table>
-        <tr>
-            <th>ID</th>
-            <th>Número</th>
-            <th>Piso</th>
-            <th>Tipo</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Número</th>
+                <th>Piso</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
         <?php foreach ($habitaciones as $h): ?>
             <tr>
                 <td><?= $h->id ?></td>
                 <td><?= htmlspecialchars($h->numero) ?></td>
                 <td><?= $h->piso ?></td>
                 <td><?= htmlspecialchars($h->tipo) ?></td>
-                <td><?= htmlspecialchars($h->estado) ?></td>
-                <td>
-                    <a href="habitaciones.php?accion=editar&id=<?= $h->id ?>">Editar</a>
-                    <a href="habitaciones.php?accion=cambiarEstado&id=<?= $h->id ?>">Cambiar estado</a>
+                <td><span class="badge badge-<?= htmlspecialchars($h->estado) ?>"><?= htmlspecialchars($h->estado) ?></span></td>
+                <td class="acciones">
+                    <a href="habitaciones.php?accion=editar&id=<?= $h->id ?>" class="btn btn-sm">Editar</a>
+                    <a href="habitaciones.php?accion=cambiarEstado&id=<?= $h->id ?>" class="btn btn-sm">Cambiar estado</a>
                     <!-- Eliminar usa un formulario POST y pide confirmación con JavaScript -->
-                    <form method="post" action="habitaciones.php?accion=eliminar" style="display:inline"
+                    <form method="post" action="habitaciones.php?accion=eliminar"
                           onsubmit="return confirm('¿Eliminar esta habitación?')">
                         <input type="hidden" name="id" value="<?= $h->id ?>">
-                        <button type="submit">Eliminar</button>
+                        <button type="submit" class="btn-sm btn-peligro">Eliminar</button>
                     </form>
                 </td>
             </tr>
         <?php endforeach; ?>
+        </tbody>
     </table>
 
     <?php if (count($habitaciones) === 0): ?>
-        <p>No hay habitaciones registradas.</p>
+        <p class="vacio">No hay habitaciones registradas.</p>
     <?php endif; ?>
+</div>
 </body>
 </html>
