@@ -1,8 +1,14 @@
 
 <?php
+
+require_once __DIR__ . '/../dao/UsuarioDAO.php';
 require_once __DIR__ . '/../service/PermisoService.php';
+
 class Sesion
 {
+    private static bool $verificada = false;
+    private static ?array $usuarioActual = null;
+
     public static function iniciar(Usuario $usuario): void
     {
         session_regenerate_id(true);
@@ -12,11 +18,50 @@ class Sesion
             'usuario' => $usuario->usuario,
             'rol' => $usuario->rol
         ];
+
+        self::$usuarioActual = $_SESSION['usuario'];
+        self::$verificada = true;
     }
 
     public static function usuario(): ?array
     {
-        return $_SESSION['usuario'] ?? null;
+        if (!isset($_SESSION['usuario'])) {
+            return null;
+        }
+
+        // Consultar la base una sola vez por petición.
+        if (self::$verificada) {
+            return self::$usuarioActual;
+        }
+
+        self::$verificada = true;
+
+        $id = $_SESSION['usuario']['id'] ?? null;
+
+        if (!is_int($id) || $id <= 0) {
+            unset($_SESSION['usuario']);
+            return null;
+        }
+
+        $dao = new UsuarioDAO();
+        $usuario = $dao->buscarPorId($id);
+
+        if ($usuario === null || !$usuario->activo) {
+            unset($_SESSION['usuario']);
+            self::$usuarioActual = null;
+            return null;
+        }
+
+        // Actualizar nombre y rol desde MySQL.
+        self::$usuarioActual = [
+            'id' => $usuario->id,
+            'usuario' => $usuario->usuario,
+            'rol' => $usuario->rol
+        ];
+
+        $_SESSION['usuario'] = self::$usuarioActual;
+
+        return self::$usuarioActual;
     }
 
     public static function estaAutenticado(): bool
@@ -39,9 +84,9 @@ class Sesion
         $usuario = self::usuario();
 
         if (!PermisoService::tienePermiso(
-                $usuario['rol'],
-                $modulo)) {
-
+            $usuario['rol'],
+            $modulo
+        )) {
             http_response_code(403);
             exit('No tiene permiso para acceder a esta página.');
         }
@@ -50,6 +95,9 @@ class Sesion
     public static function cerrar(): void
     {
         $_SESSION = [];
+
+        self::$usuarioActual = null;
+        self::$verificada = false;
 
         if (ini_get('session.use_cookies')) {
             $datos = session_get_cookie_params();

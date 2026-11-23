@@ -1,3 +1,4 @@
+
 <?php
 
 class PermisoService
@@ -6,6 +7,20 @@ class PermisoService
         string $rol,
         string $modulo
     ): bool {
+        $modulos = [
+            'HABITACIONES',
+            'HUESPEDES',
+            'RESERVAS',
+            'CHECK_IN_OUT',
+            'CERRADURA_RFID',
+            'BITACORA',
+            'GESTION_USUARIOS'
+        ];
+
+        if (!in_array($modulo, $modulos, true)) {
+            return false;
+        }
+
         if ($rol === RolUsuario::ADMIN) {
             return true;
         }
@@ -14,13 +29,11 @@ class PermisoService
             return false;
         }
 
-        $modulosPermitidos = [
+        return in_array($modulo, [
             'HABITACIONES',
             'HUESPEDES',
             'RESERVAS',
             'CHECK_IN_OUT'
-        ];
-
-        return in_array($modulo, $modulosPermitidos, true);
+        ], true);
     }
 }
