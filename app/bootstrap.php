@@ -30,6 +30,15 @@ require_once __DIR__ . '/core/Csrf.php';
 // Modelos relacionados con usuarios
 require_once __DIR__ . '/model/Usuario.php';
 require_once __DIR__ . '/model/RolUsuario.php';
+require_once __DIR__ . '/model/EstadoReserva.php';
+require_once __DIR__ . '/model/EstadoHabitacion.php';
+require_once __DIR__ . '/model/EstadoLlave.php';
+require_once __DIR__ . '/model/TipoEvento.php';
+require_once __DIR__ . '/model/Reserva.php';
+require_once __DIR__ . '/model/Llave.php';
+require_once __DIR__ . '/model/Habitacion.php';
+require_once __DIR__ . '/model/Huesped.php';
+require_once __DIR__ . '/model/Evento.php';
 
 // Persistencia de usuarios
 require_once __DIR__ . '/dao/UsuarioDAO.php';
