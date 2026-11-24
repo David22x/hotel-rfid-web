@@ -132,3 +132,48 @@ dialog h1 { font-size: 1.25rem; }
     .menu nav a { margin: 0; }
     .contenido { padding: 16px; }
 }
+
+/* ---------- Usuario y cierre de sesión ---------- */
+
+.menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-usuario {
+    padding: 12px;
+    margin-bottom: 16px;
+    border-top: 1px solid var(--borde);
+    border-bottom: 1px solid var(--borde);
+}
+
+.menu-usuario strong {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.menu-usuario small {
+    display: block;
+    color: var(--suave);
+    margin-top: 4px;
+}
+
+.menu-salir {
+    margin-top: auto;
+    padding: 16px 12px 0;
+}
+
+.menu-salir button {
+    width: 100%;
+}
+
+@media (max-width: 640px) {
+    .menu nav {
+        flex-wrap: wrap;
+    }
+
+    .menu-salir {
+        margin-top: 12px;
+        padding: 0 12px;
+    }
+}
