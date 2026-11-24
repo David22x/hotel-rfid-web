@@ -9,8 +9,8 @@ define('DB_PASS', '');            // en XAMPP suele estar vacía
 
 define('ZONA_HORARIA', 'America/Guayaquil');
 
-// Ruta base del sitio. Local (XAMPP): '/hotel-rfid-web/public'
+// Ruta base del sitio. Local (XAMPP): '/Proy_Visual_Final/hotel-rfid-web/public'
 // En el dominio: ''
-define('BASE_URL', '/hotel-rfid-web/public');
+define('BASE_URL', '/Proy_Visual_Final/hotel-rfid-web/public');
 
 define('MOSTRAR_ERRORES', true);  // en el dominio: false
