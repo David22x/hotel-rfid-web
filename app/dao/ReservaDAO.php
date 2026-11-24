@@ -1,91 +1,136 @@
 <?php
 
-require_once __DIR__ . '/../model/Reserva.php';
 require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../model/Reserva.php';
+require_once __DIR__ . '/../model/EstadoReserva.php';
 
 class ReservaDAO
 {
-    /**
-     * @return Reserva[]
-     */
-    public function listar(?string $estado = null): array
+    public function listar(): array
     {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
+        $consulta = Database::conectar()->prepare(
+            'SELECT r.id, r.huesped_id, r.habitacion_id, r.fecha_entrada, r.fecha_salida, r.estado,
+                    h.nombre AS huesped_nombre, hab.numero AS habitacion_numero
+             FROM reserva r
+             JOIN huesped h ON h.id = r.huesped_id
+             JOIN habitacion hab ON hab.id = r.habitacion_id
+             ORDER BY r.fecha_entrada DESC, r.id DESC'
+        );
+        $consulta->execute();
+        return array_map([$this, 'crearDesdeFila'], $consulta->fetchAll());
     }
 
     public function buscarPorId(int $id): ?Reserva
     {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
+        $consulta = Database::conectar()->prepare(
+            'SELECT r.id, r.huesped_id, r.habitacion_id, r.fecha_entrada, r.fecha_salida, r.estado,
+                    h.nombre AS huesped_nombre, hab.numero AS habitacion_numero
+             FROM reserva r
+             JOIN huesped h ON h.id = r.huesped_id
+             JOIN habitacion hab ON hab.id = r.habitacion_id
+             WHERE r.id = ?'
+        );
+        $consulta->execute([$id]);
+        $fila = $consulta->fetch();
+        return $fila === false ? null : $this->crearDesdeFila($fila);
     }
 
-    /**
-     * Devuelve el ID generado.
-     */
+    public function buscarPendientes(): array
+    {
+        $consulta = Database::conectar()->prepare(
+            'SELECT r.id, r.huesped_id, r.habitacion_id, r.fecha_entrada, r.fecha_salida, r.estado,
+                    h.nombre AS huesped_nombre, hab.numero AS habitacion_numero
+             FROM reserva r
+             JOIN huesped h ON h.id = r.huesped_id
+             JOIN habitacion hab ON hab.id = r.habitacion_id
+             WHERE r.estado = ?
+             ORDER BY r.fecha_entrada'
+        );
+        $consulta->execute([EstadoReserva::PENDIENTE]);
+        return array_map([$this, 'crearDesdeFila'], $consulta->fetchAll());
+    }
+
     public function crear(Reserva $reserva): int
     {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
-    }
-
-    /**
-     * Requiere el ID de una reserva existente.
-     */
-    public function actualizar(Reserva $reserva): void
-    {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
+        $conexion = Database::conectar();
+        $consulta = $conexion->prepare(
+            'INSERT INTO reserva (huesped_id, habitacion_id, fecha_entrada, fecha_salida, estado)
+             VALUES (?, ?, ?, ?, ?)'
+        );
+        $consulta->execute([
+            $reserva->huespedId,
+            $reserva->habitacionId,
+            $reserva->fechaEntrada,
+            $reserva->fechaSalida,
+            $reserva->estado,
+        ]);
+        return (int) $conexion->lastInsertId();
     }
 
     public function actualizarEstado(int $id, string $estado): void
     {
-        throw new LogicException(__METHOD__ . ' todavía no está implementado.');
+        $consulta = Database::conectar()->prepare('UPDATE reserva SET estado = ? WHERE id = ?');
+        $consulta->execute([$estado, $id]);
     }
 
-    /**
-     * Solo considera reservas pendientes o activas. Las estadías contiguas se permiten.
-     */
-    public function hayCruce(int $habitacionId, string $entrada, string $salida, ?int $excluirReservaId = null): bool
-    {
-        $consulta = Database::conectar()->prepare(
-            "SELECT EXISTS (
-                 SELECT 1 FROM reserva
-                 WHERE habitacion_id = ? AND estado IN (?, ?)
-                   AND fecha_entrada < ? AND fecha_salida > ?
-                   AND (? IS NULL OR id <> ?)
-             )"
-        );
-        $consulta->execute([
+    public function hayCruce(
+        int $habitacionId,
+        string $fechaEntrada,
+        string $fechaSalida,
+        ?int $excluirId = null
+    ): bool {
+        $sql = 'SELECT COUNT(*) FROM reserva
+                WHERE habitacion_id = ?
+                  AND estado IN (?, ?)
+                  AND fecha_entrada < ?
+                  AND fecha_salida > ?';
+        $parametros = [
             $habitacionId,
             EstadoReserva::PENDIENTE,
             EstadoReserva::ACTIVA,
-            $salida,
-            $entrada,
-            $excluirReservaId,
-            $excluirReservaId,
-        ]);
+            $fechaSalida,
+            $fechaEntrada,
+        ];
 
-        return (bool) $consulta->fetchColumn();
+        if ($excluirId !== null) {
+            $sql .= ' AND id <> ?';
+            $parametros[] = $excluirId;
+        }
+
+        $consulta = Database::conectar()->prepare($sql);
+        $consulta->execute($parametros);
+        return (int) $consulta->fetchColumn() > 0;
     }
 
     public function existenPorHabitacion(int $habitacionId): bool
     {
-        $consulta = Database::conectar()->prepare('SELECT EXISTS (SELECT 1 FROM reserva WHERE habitacion_id = ?)');
+        $consulta = Database::conectar()->prepare(
+            'SELECT COUNT(*) FROM reserva WHERE habitacion_id = ?'
+        );
         $consulta->execute([$habitacionId]);
-
-        return (bool) $consulta->fetchColumn();
+        return (int) $consulta->fetchColumn() > 0;
     }
 
     public function existenPorHuesped(int $huespedId): bool
     {
-        $consulta = Database::conectar()->prepare('SELECT EXISTS (SELECT 1 FROM reserva WHERE huesped_id = ?)');
+        $consulta = Database::conectar()->prepare(
+            'SELECT COUNT(*) FROM reserva WHERE huesped_id = ?'
+        );
         $consulta->execute([$huespedId]);
-
-        return (bool) $consulta->fetchColumn();
+        return (int) $consulta->fetchColumn() > 0;
     }
 
-    public function existeActivaPorHabitacion(int $habitacionId): bool
+    private function crearDesdeFila(array $fila): Reserva
     {
-        $consulta = Database::conectar()->prepare('SELECT EXISTS (SELECT 1 FROM reserva WHERE habitacion_id = ? AND estado = ?)');
-        $consulta->execute([$habitacionId, EstadoReserva::ACTIVA]);
-
-        return (bool) $consulta->fetchColumn();
+        return new Reserva(
+            huespedId: (int) $fila['huesped_id'],
+            habitacionId: (int) $fila['habitacion_id'],
+            fechaEntrada: $fila['fecha_entrada'],
+            fechaSalida: $fila['fecha_salida'],
+            estado: $fila['estado'],
+            id: (int) $fila['id'],
+            huespedNombre: $fila['huesped_nombre'] ?? null,
+            habitacionNumero: $fila['habitacion_numero'] ?? null
+        );
     }
 }

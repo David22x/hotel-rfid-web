@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/EstadoReserva.php';
-
 class Reserva
 {
     public function __construct(
@@ -11,6 +9,8 @@ class Reserva
         public string $fechaSalida,
         public string $estado = EstadoReserva::PENDIENTE,
         public ?int $id = null,
+        public ?string $huespedNombre = null,
+        public ?string $habitacionNumero = null,
     ) {
     }
 }
