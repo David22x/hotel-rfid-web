@@ -23,17 +23,45 @@ class EventoDAO
         return (int) $conexion->lastInsertId();
     }
 
-    public function listar(): array
+    public function registrar(
+        string $tipo,
+        ?int $habitacionId,
+        ?string $uid,
+        ?string $resultado,
+        ?string $detalle,
+    ): int {
+        return $this->crear(new Evento(date('Y-m-d H:i:s'), $tipo, $habitacionId, $uid, $resultado, $detalle));
+    }
+
+    // Los límites de fecha y hora son inclusivos cuando se indican.
+    public function listar(?string $desde = null, ?string $hasta = null, ?int $habitacionId = null): array
     {
-        $consulta = Database::conectar()->prepare(
-            'SELECT e.id, e.fecha_hora, e.tipo, e.habitacion_id, e.uid, e.resultado, e.detalle,
+        $sql = 'SELECT e.id, e.fecha_hora, e.tipo, e.habitacion_id, e.uid, e.resultado, e.detalle,
                     h.numero AS habitacion_numero
              FROM evento e
-             LEFT JOIN habitacion h ON h.id = e.habitacion_id
-             ORDER BY e.fecha_hora DESC, e.id DESC
-             LIMIT 300'
-        );
-        $consulta->execute();
+             LEFT JOIN habitacion h ON h.id = e.habitacion_id';
+        $filtros = [];
+        $parametros = [];
+
+        if ($desde !== null) {
+            $filtros[] = 'e.fecha_hora >= ?';
+            $parametros[] = $desde;
+        }
+        if ($hasta !== null) {
+            $filtros[] = 'e.fecha_hora <= ?';
+            $parametros[] = $hasta;
+        }
+        if ($habitacionId !== null) {
+            $filtros[] = 'e.habitacion_id = ?';
+            $parametros[] = $habitacionId;
+        }
+        if ($filtros !== []) {
+            $sql .= ' WHERE ' . implode(' AND ', $filtros);
+        }
+        $sql .= ' ORDER BY e.fecha_hora DESC, e.id DESC LIMIT 300';
+
+        $consulta = Database::conectar()->prepare($sql);
+        $consulta->execute($parametros);
         $filas = $consulta->fetchAll();
         $eventos = [];
         foreach ($filas as $fila) {

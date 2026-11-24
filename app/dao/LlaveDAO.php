@@ -5,6 +5,46 @@ require_once __DIR__ . '/../model/Llave.php';
 
 class LlaveDAO
 {
+    public function buscarPorUid(string $uid): ?Llave
+    {
+        $consulta = Database::conectar()->prepare(
+            'SELECT id, reserva_id, uid, valida_desde, valida_hasta, estado
+             FROM llave
+             WHERE uid = ?
+             ORDER BY (estado = ?) DESC, id DESC
+             LIMIT 1'
+        );
+        $consulta->execute([$uid, EstadoLlave::ACTIVA]);
+        $fila = $consulta->fetch();
+
+        return $fila === false ? null : $this->crearDesdeFila($fila);
+    }
+
+    /** @return Llave[] */
+    public function listarActivasVencidas(string $ahora): array
+    {
+        $consulta = Database::conectar()->prepare(
+            'SELECT id, reserva_id, uid, valida_desde, valida_hasta, estado
+             FROM llave
+             WHERE estado = ? AND valida_hasta < ?
+             ORDER BY valida_hasta, id'
+        );
+        $consulta->execute([EstadoLlave::ACTIVA, $ahora]);
+
+        return array_map([$this, 'crearDesdeFila'], $consulta->fetchAll());
+    }
+
+    // Solo devuelve true si esta ejecución cambió el estado.
+    public function marcarVencida(int $id, string $ahora): bool
+    {
+        $consulta = Database::conectar()->prepare(
+            'UPDATE llave SET estado = ? WHERE id = ? AND estado = ? AND valida_hasta < ?'
+        );
+        $consulta->execute([EstadoLlave::VENCIDA, $id, EstadoLlave::ACTIVA, $ahora]);
+
+        return $consulta->rowCount() > 0;
+    }
+
     public function uidTieneLlaveActiva(string $uid): bool
     {
         $consulta = Database::conectar()->prepare(
@@ -50,5 +90,17 @@ class LlaveDAO
             $reservaId,
             EstadoLlave::ACTIVA,
         ]);
+    }
+
+    private function crearDesdeFila(array $fila): Llave
+    {
+        return new Llave(
+            (int) $fila['reserva_id'],
+            $fila['uid'],
+            $fila['valida_desde'],
+            $fila['valida_hasta'],
+            $fila['estado'],
+            (int) $fila['id']
+        );
     }
 }
