@@ -20,6 +20,10 @@ PHP, MySQL, HTML, CSS y JS. Patrón MVC + DAO, sin frameworks.
   integrar el hardware físico se requiere definir el puerto COM, el baud rate, el
   protocolo de lectura y exponer una API local que devuelva el UID al formulario.
 
+## Despliegue
+
+La [guía de despliegue](docs/despliegue.md) cubre la configuración del dominio, HTTPS y la ejecución programada de la expiración de llaves.
+
 ## Ramas
 
 - `main`: solo versiones estables.

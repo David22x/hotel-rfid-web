@@ -18,7 +18,23 @@ Usar una base local de pruebas con `database/schema.sql` y `database/datos_demo.
 | Detectar reserva activa | Consultar `existeActivaPorHabitacion()` antes y después de cambiar a `ACTIVA` una reserva de prueba | Devuelve `false` y después `true` | Pendiente en MySQL desde PHP |
 | Probar reservas y operaciones RFID | Ejecutar `C:\xampp\php\php.exe tests/reservas_checkin_test.php` desde el directorio del proyecto | Rechaza pasados, detecta cruces, permite contigüidad, completa check-in/check-out y verifica reversión ante habitación no disponible | Ejecutado localmente; todos los casos pasaron |
 
-## Autenticación, permisos y gestión de usuarios — Sandra
+## Flujo integrado con datos de demostración
+
+Preparar una base MySQL vacía de pruebas, importar `database/schema.sql` y luego `database/datos_demo.sql`. Configurar `app/config/config.php` para apuntar a esa base y abrir `public/login.php` en XAMPP. Conviene probar el check-in de la habitación 101 el mismo día de la importación, porque su reserva vence 24 horas después.
+
+| Caso | Pasos | Resultado esperado | Resultado obtenido |
+| --- | --- | --- | --- |
+| Cargar datos | Importar ambos scripts en MySQL 8.0.43 y consultar los totales | 2 usuarios, 3 habitaciones, 2 huéspedes y 2 reservas | Aprobado en una instancia aislada |
+| Iniciar sesión con ambos roles | Usar las cuentas de `datos_demo.sql` y cerrar sesión entre intentos | Cada cuenta accede con su rol correspondiente | Hashes verificados con PHP. Inicio de sesión de esta corrida pendiente |
+| Crear una reserva | Seleccionar un huésped de la demo y la habitación 102. Usar un intervalo que empiece cuatro días después de la importación | La nueva reserva aparece como `PENDIENTE` | Pendiente |
+| Hacer check-in | Abrir la reserva de la habitación 101 y simular el UID `A3F1C20B` | Reserva y llave `ACTIVA`, habitación `OCUPADA` | Pendiente |
+| Hacer check-out | Finalizar la misma reserva | Reserva `FINALIZADA`, llave `REVOCADA`, habitación `POR_LIMPIAR` | Pendiente |
+| Consultar la bitácora | Abrir la bitácora como administrador después del check-out | Aparecen `CHECK_IN`, `LLAVE_EMITIDA`, `CHECK_OUT` y `LLAVE_REVOCADA` para la habitación 101 | Pendiente |
+| Probar la cerradura simulada | Después del check-in, leer el UID en la habitación 101 y en otra habitación. Repetir en la 101 después del check-out | Acceso concedido en la habitación correcta durante la vigencia. Acceso denegado en la otra habitación y después del check-out | Pendiente de integrar la cerradura |
+
+La carga SQL funcionó desde el cliente MySQL. En esta corrida, el entorno impidió conectar PHP con la instancia aislada mediante PDO, por lo que los resultados de las operaciones de la aplicación quedan por confirmar.
+
+## Autenticación, permisos y gestión de usuarios - Sandra
 
 **Entorno:** XAMPP local, PHP/MySQL, cuentas de prueba ADMIN y RECEPCIONISTA.  
 **Registro:** resultados comunicados por Sandra tras ejecutar las pruebas manuales. No se incluyen capturas aún.

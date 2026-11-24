@@ -67,6 +67,26 @@ class ReservaDAO
         return (int) $conexion->lastInsertId();
     }
 
+    public function actualizar(Reserva $reserva): void
+    {
+        if ($reserva->id === null) {
+            throw new InvalidArgumentException('Se requiere el ID de la reserva para actualizarla.');
+        }
+
+        $consulta = Database::conectar()->prepare(
+            'UPDATE reserva
+             SET huesped_id = ?, habitacion_id = ?, fecha_entrada = ?, fecha_salida = ?
+             WHERE id = ?'
+        );
+        $consulta->execute([
+            $reserva->huespedId,
+            $reserva->habitacionId,
+            $reserva->fechaEntrada,
+            $reserva->fechaSalida,
+            $reserva->id,
+        ]);
+    }
+
     public function actualizarEstado(int $id, string $estado): void
     {
         $consulta = Database::conectar()->prepare('UPDATE reserva SET estado = ? WHERE id = ?');
@@ -118,6 +138,17 @@ class ReservaDAO
         );
         $consulta->execute([$huespedId]);
         return (int) $consulta->fetchColumn() > 0;
+    }
+
+    public function existeActivaPorHabitacion(int $habitacionId): bool
+    {
+        $consulta = Database::conectar()->prepare(
+            'SELECT EXISTS (
+                 SELECT 1 FROM reserva WHERE habitacion_id = ? AND estado = ?
+             )'
+        );
+        $consulta->execute([$habitacionId, EstadoReserva::ACTIVA]);
+        return (bool) $consulta->fetchColumn();
     }
 
     private function crearDesdeFila(array $fila): Reserva
