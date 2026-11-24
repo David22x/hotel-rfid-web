@@ -17,3 +17,30 @@ Usar una base local de pruebas con `database/schema.sql` y `database/datos_demo.
 | Excluir la reserva editada | Usar el intervalo de la reserva de la habitación `101` y pasar su ID como exclusión | `hayCruce()` devuelve `false` | Pendiente en MySQL desde PHP |
 | Detectar reserva activa | Consultar `existeActivaPorHabitacion()` antes y después de cambiar a `ACTIVA` una reserva de prueba | Devuelve `false` y después `true` | Pendiente en MySQL desde PHP |
 | Probar reservas y operaciones RFID | Ejecutar `C:\xampp\php\php.exe tests/reservas_checkin_test.php` desde el directorio del proyecto | Rechaza pasados, detecta cruces, permite contigüidad, completa check-in/check-out y verifica reversión ante habitación no disponible | Ejecutado localmente; todos los casos pasaron |
+
+## Autenticación, permisos y gestión de usuarios — Sandra
+
+**Entorno:** XAMPP local, PHP/MySQL, cuentas de prueba ADMIN y RECEPCIONISTA.  
+**Registro:** resultados comunicados por Sandra tras ejecutar las pruebas manuales. No se incluyen capturas aún.
+
+| Caso | Datos o acción | Resultado esperado | Resultado obtenido |
+| --- | --- | --- | --- |
+| SU-01 Acceso ADMIN | Iniciar sesión como ADMIN y abrir `usuarios.php` | Acceso permitido | Aprobada |
+| SU-02 Acceso RECEPCIONISTA | Abrir `usuarios.php` mediante URL | Respuesta 403, sin gestión de cuentas | Aprobada |
+| SU-03 Crear RECEPCIONISTA | Registrar usuario válido | Cuenta creada con contraseña hasheada | Aprobada |
+| SU-04 Usuario duplicado | Registrar nombre existente | Se rechaza | Aprobada |
+| SU-05 Contraseña corta | Contraseña menor de 8 caracteres | Se rechaza | Aprobada |
+| SU-06 Editar nombre | Cambiar nombre de usuario | Actualización correcta | Aprobada |
+| SU-07 Cambiar rol | Modificar el rol de otra cuenta | Se guarda un rol válido | Aprobada |
+| SU-08 Restablecer contraseña | Establecer nueva contraseña y acceder | La nueva contraseña funciona | Aprobada |
+| SU-09 Desactivar usuario | Desactivar cuenta y probar inicio de sesión | Acceso denegado | Aprobada |
+| SU-10 Activar usuario | Reactivar cuenta y probar inicio de sesión | Acceso permitido | Aprobada |
+| SU-11 Desactivar cuenta propia | Intentar desactivar el propio ADMIN | Se rechaza | Aprobada |
+| SU-12 Eliminar cuenta propia | Intentar eliminar el propio ADMIN | Se rechaza | Aprobada |
+| SU-13 Quitar rol último ADMIN | Intentar degradar al último ADMIN activo | Se rechaza | Aprobada |
+| SU-14 Eliminar último ADMIN | Intentar eliminar último ADMIN activo | Se rechaza | Aprobada |
+| SU-15 Eliminar otro usuario | Eliminar cuenta distinta permitida | Cuenta eliminada | Aprobada |
+
+**Otras pruebas reportadas:** inicio de sesión, cierre de sesión, validación de campos y contraseñas incorrectas, menú diferenciado por rol, navegación en el layout y acceso directo restringido a Gestión de Usuarios: funcionamiento correcto en el entorno local.
+
+**Pendiente de evidencia:** añadir capturas representativas de login, ambos roles, gestión de usuarios y rechazo de permisos. Las pruebas de cambio de rol/desactivación **durante una sesión ya abierta** deberán documentarse con su resultado real cuando se completen.
