@@ -16,6 +16,3 @@ define('ZONA_HORARIA', 'America/Guayaquil');
 define('BASE_URL', '/Proy_Visual_Final/hotel-rfid-web/public');
 
 define('MOSTRAR_ERRORES', true);  // en el dominio: false
-
-// Token que usa el lector RFID para llamar a /api/. Generar con: openssl rand -hex 32
-define('RFID_TOKEN', '');

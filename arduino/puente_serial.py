@@ -1,74 +1,116 @@
 #!/usr/bin/env python3
-"""Puente entre el Arduino (USB/serial) y la API del hotel en la nube.
+"""Lector RFID desacoplado: Arduino (USB) -> servidor local y nube a la vez.
 
-Lee el UID que imprime lector_rfid.ino, lo envía por HTTPS y, en modo cerradura,
-devuelve al Arduino la respuesta "OK" o "NO" para encender el LED.
+Lee el UID que imprime lector_rfid.ino y lo envía en paralelo a todos los
+servidores configurados. Si un servidor no responde se ignora sin avisar
+(use --detalle para ver qué pasa).
 
 Requisitos:  pip install pyserial requests
+Uso:         python puente_serial.py                      (lee puente.json junto a este archivo)
+             python puente_serial.py --config otro.json --detalle
 
-Recepción (check-in):
-    python puente_serial.py --puerto COM3 --url https://TU-APP.azurewebsites.net --modo checkin
-Puerta de una habitación:
-    python puente_serial.py --puerto COM4 --url https://TU-APP.azurewebsites.net --modo cerradura --habitacion 1
+Configuración: copie puente.example.json como puente.json (no se sube a Git).
 
-El token se lee de la variable de entorno RFID_TOKEN (igual al RFID_TOKEN de config.php).
+Modos:
+  checkin    Envía a /api/lectura.php. La pantalla de check-in que esté abierta
+             recibe el UID. LED verde si al menos un servidor lo aceptó.
+  cerradura  Envía a /api/acceso.php. El orden de "servidores" es la prioridad:
+             decide el primero que conozca la tarjeta; si responde que no está
+             registrada, o no responde, se pasa al siguiente. Sin respuesta: NO.
 """
 import argparse
-import os
+import json
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 import serial
 
 UID = re.compile(r"^([0-9A-F]{2}){4,10}$")
+ESPERA = (3, 5)  # segundos: conexión, respuesta
+
+
+def cargar_config(ruta: Path) -> dict:
+    cfg = json.loads(ruta.read_text(encoding="utf-8"))
+    if cfg.get("modo") not in ("checkin", "cerradura"):
+        raise ValueError('"modo" debe ser "checkin" o "cerradura".')
+    if not cfg.get("puerto"):
+        raise ValueError('Falta "puerto" (p. ej. COM3 o /dev/ttyUSB0).')
+    if not cfg.get("servidores"):
+        raise ValueError('Falta la lista "servidores".')
+    for s in cfg["servidores"]:
+        u = urlparse(s.get("url", ""))
+        if u.scheme not in ("http", "https") or not u.hostname:
+            raise ValueError(f"URL no válida: {s.get('url')!r}.")
+        if cfg["modo"] == "cerradura" and not isinstance(s.get("habitacion_id"), int):
+            # El id de una misma habitación puede ser distinto en cada base.
+            raise ValueError(f'Falta "habitacion_id" (entero) para {s["url"]}.')
+    return cfg
+
+
+def enviar(servidor: dict, modo: str, uid: str, detalle: bool):
+    """Devuelve el JSON de la respuesta correcta, o None si el servidor falló."""
+    ruta = "/api/lectura.php" if modo == "checkin" else "/api/acceso.php"
+    carga = {"uid": uid}
+    if modo == "cerradura":
+        carga["habitacion_id"] = servidor["habitacion_id"]
+    try:
+        r = requests.post(
+            servidor["url"].rstrip("/") + ruta,
+            json=carga,
+            timeout=ESPERA,
+            allow_redirects=False,
+        )
+        if detalle:
+            print(f"{uid} -> {servidor['url']}: HTTP {r.status_code} {r.text.strip()[:200]}")
+        return r.json() if r.status_code in (200, 201) else None
+    except (requests.RequestException, ValueError) as e:
+        if detalle:
+            print(f"{uid} -> {servidor['url']}: {e}", file=sys.stderr)
+        return None
+
+
+def procesar(pool, cfg: dict, uid: str, detalle: bool) -> str:
+    """Envía el UID a todos los servidores y devuelve "OK" o "NO" para el Arduino."""
+    modo = cfg["modo"]
+    envios = [pool.submit(enviar, s, modo, uid, detalle) for s in cfg["servidores"]]
+
+    if modo == "checkin":
+        # Basta el primero que acepte; los demás terminan en segundo plano.
+        for envio in as_completed(envios):
+            if (envio.result() or {}).get("ok"):
+                return "OK"
+        return "NO"
+
+    for envio in envios:  # en orden de prioridad
+        datos = envio.result()
+        if datos is not None and datos.get("resultado") != "UID_NO_REGISTRADO":
+            return "OK" if datos.get("acceso") is True else "NO"
+    return "NO"
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--puerto", required=True, help="Puerto serial, p. ej. COM3 o /dev/ttyUSB0")
-    ap.add_argument("--url", required=True, help="URL base del sitio, sin / final")
-    ap.add_argument("--modo", choices=["checkin", "cerradura"], required=True)
-    ap.add_argument("--habitacion", type=int, help="id de la habitación (solo modo cerradura)")
-    ap.add_argument("--baudios", type=int, default=9600)
+    ap.add_argument("--config", type=Path, default=Path(__file__).with_name("puente.json"))
+    ap.add_argument("--detalle", action="store_true", help="mostrar la respuesta o el error de cada servidor")
     args = ap.parse_args()
 
-    token = os.environ.get("RFID_TOKEN", "")
-    if not token:
-        print("Falta la variable de entorno RFID_TOKEN.", file=sys.stderr)
-        return 2
-    if args.modo == "cerradura" and not args.habitacion:
-        print("El modo cerradura requiere --habitacion.", file=sys.stderr)
-        return 2
-    if not args.url.startswith("https://") and "localhost" not in args.url and "127.0.0.1" not in args.url:
-        print("Use HTTPS: el token viajaría sin cifrar.", file=sys.stderr)
+    try:
+        cfg = cargar_config(args.config)
+    except (OSError, ValueError) as e:
+        print(f"Configuración: {e}", file=sys.stderr)
         return 2
 
-    cabeceras = {"Authorization": f"Bearer {token}"}
-    ruta = "/api/lectura.php" if args.modo == "checkin" else "/api/acceso.php"
-
-    with serial.Serial(args.puerto, args.baudios, timeout=1) as arduino:
-        print(f"Escuchando {args.puerto}. Ctrl+C para salir.")
+    with ThreadPoolExecutor(max_workers=8) as pool, \
+            serial.Serial(cfg["puerto"], cfg.get("baudios", 9600), timeout=1) as arduino:
+        print(f"Escuchando {cfg['puerto']} en modo {cfg['modo']}. Ctrl+C para salir.")
         while True:
-            linea = arduino.readline().decode("utf-8", errors="ignore").strip().upper()
-            if not UID.match(linea):
-                if linea.startswith("RESPUESTA:"):
-                    print("Arduino:", linea)
-                continue
-            carga = {"uid": linea}
-            if args.modo == "cerradura":
-                carga["habitacion_id"] = args.habitacion
-            try:
-                r = requests.post(args.url + ruta, json=carga, headers=cabeceras, timeout=8)
-                datos = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
-                print(f"{linea} -> HTTP {r.status_code} {datos}")
-                if args.modo == "cerradura":
-                    # Ante cualquier fallo la puerta queda cerrada.
-                    arduino.write((datos.get("respuesta", "NO") if r.ok else "NO").encode() + b"\n")
-            except requests.RequestException as e:
-                print(f"{linea} -> error de red: {e}", file=sys.stderr)
-                if args.modo == "cerradura":
-                    arduino.write(b"NO\n")
+            uid = arduino.readline().decode("utf-8", errors="ignore").strip().upper()
+            if UID.match(uid):
+                arduino.write(procesar(pool, cfg, uid, args.detalle).encode() + b"\n")
 
 
 if __name__ == "__main__":

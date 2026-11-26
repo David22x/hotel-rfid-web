@@ -1,5 +1,5 @@
 <?php
-// POST /api/lectura.php  {"uid":"A3F1C20B"}   (Authorization: Bearer <RFID_TOKEN>)
+// POST /api/lectura.php  {"uid":"A3F1C20B"}
 // Lector de recepción: deja la lectura pendiente para el formulario de check-in.
 define('SIN_SESION', true);
 require_once __DIR__ . '/../../app/bootstrap.php';
@@ -7,7 +7,6 @@ require_once __DIR__ . '/../../app/core/ApiRfid.php';
 require_once __DIR__ . '/../../app/dao/LecturaRfidDAO.php';
 
 ApiRfid::exigirMetodo('POST');
-ApiRfid::exigirToken();
 
 $uid = ApiRfid::uidValido(ApiRfid::datos()['uid'] ?? null);
 if ($uid === null) {

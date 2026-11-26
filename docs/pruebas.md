@@ -60,3 +60,28 @@ La carga SQL funcionó desde el cliente MySQL. En esta corrida, el entorno impid
 **Otras pruebas reportadas:** inicio de sesión, cierre de sesión, validación de campos y contraseñas incorrectas, menú diferenciado por rol, navegación en el layout y acceso directo restringido a Gestión de Usuarios: funcionamiento correcto en el entorno local.
 
 **Pendiente de evidencia:** añadir capturas representativas de login, ambos roles, gestión de usuarios y rechazo de permisos. Las pruebas de cambio de rol/desactivación **durante una sesión ya abierta** deberán documentarse con su resultado real cuando se completen.
+
+## Hardware y lector RFID - Michael
+
+**Entorno:** Arduino Uno + RC522, Chrome o Edge de escritorio, `public/prueba-lector.html` y la pantalla de check-in. Ver el cableado en `docs/hardware.md`.
+
+| Caso | Datos o acción | Resultado esperado | Resultado obtenido |
+| --- | --- | --- | --- |
+| HW-01 Lectura en monitor serial | Acercar una tarjeta con el monitor serial a 9600 | Aparece una línea con el UID en hexadecimal mayúsculas (ej. `A3F1C20B`) | Pendiente |
+| HW-02 Sin repetición | Dejar la tarjeta sobre el lector | Se envía como máximo una lectura por segundo | Pendiente |
+| HW-03 Conectar lector | En `prueba-lector.html` (localhost, Chrome), pulsar *Conectar lector* y elegir el puerto | El estado cambia a "Lector conectado" | Pendiente |
+| HW-04 Lectura real en el navegador | Acercar una tarjeta | El UID aparece en la lista de lecturas | Pendiente |
+| HW-05 Puerto ocupado | Abrir el monitor serial del IDE y pulsar *Conectar lector* | Mensaje: "No se pudo abrir el puerto…" | Pendiente |
+| HW-06 Cancelar elección de puerto | Pulsar *Conectar lector* y cerrar el diálogo sin elegir | Mensaje: "No se eligió ningún puerto." | Pendiente |
+| HW-07 Desconectar USB | Desconectar el cable con el lector conectado | El estado cambia a "Lector desconectado" | Pendiente |
+| HW-08 LED verde | Pulsar *Enviar OK* | Se enciende el LED verde 2 s | Pendiente |
+| HW-09 LED rojo | Pulsar *Enviar NO* | Se enciende el LED rojo 2 s | Pendiente |
+| HW-10 Simular UID válido | Escribir `a3f1c20b` y pulsar *Simular lectura* | Se registra `A3F1C20B` (en mayúsculas) | Aprobada (Chrome, localhost) |
+| HW-11 Simular UID corto | Escribir `A3F1` | Mensaje: "El UID debe ser hexadecimal (0-9, A-F) y tener de 8 a 20 caracteres." | Aprobada (Chrome, localhost) |
+| HW-12 Simular UID no hexadecimal | Escribir `ZZ12XY34` | Mismo mensaje de formato | Aprobada (Chrome, localhost) |
+| HW-13 Simular UID vacío | Pulsar *Simular lectura* sin escribir | Mismo mensaje de formato | Pendiente |
+| HW-14 Navegador sin Web Serial | Abrir `prueba-lector.html` en Firefox | *Conectar lector* deshabilitado, aviso de usar el simulador, y el simulador funciona | Pendiente |
+| HW-15 Check-in con lector | En `checkin.php`, conectar el lector y acercar una tarjeta | El campo UID se llena y se enciende el LED verde | Pendiente |
+| HW-16 Check-in con simulador | En `checkin.php`, simular `A3F1C20B` | El campo UID se llena con `A3F1C20B` | Pendiente |
+| HW-17 Reconexión tras recargar | Hacer un check-in con el lector conectado | Al recargar la página, el lector se reconecta solo | Pendiente |
+| HW-18 Lector en el dominio | Abrir `https://<dominio>/prueba-lector.html` y repetir HW-03 y HW-04 | Funciona igual que en localhost | Pendiente |

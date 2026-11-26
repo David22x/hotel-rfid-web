@@ -1,5 +1,5 @@
 <?php
-// POST /api/acceso.php  {"uid":"A3F1C20B","habitacion_id":1}   (Authorization: Bearer <RFID_TOKEN>)
+// POST /api/acceso.php  {"uid":"A3F1C20B","habitacion_id":1}
 // Cerradura de una habitación: valida la tarjeta, registra el evento y responde OK/NO para el Arduino.
 define('SIN_SESION', true);
 require_once __DIR__ . '/../../app/bootstrap.php';
@@ -8,7 +8,6 @@ require_once __DIR__ . '/../../app/service/CerraduraService.php';
 require_once __DIR__ . '/../../app/dao/HabitacionDAO.php';
 
 ApiRfid::exigirMetodo('POST');
-ApiRfid::exigirToken();
 
 $datos = ApiRfid::datos();
 $uid = ApiRfid::uidValido($datos['uid'] ?? null);

@@ -20,20 +20,6 @@ class ApiRfid
         }
     }
 
-    /** Exige "Authorization: Bearer <RFID_TOKEN>" (comparación en tiempo constante). */
-    public static function exigirToken(): void
-    {
-        $esperado = defined('RFID_TOKEN') ? RFID_TOKEN : '';
-        if (strlen($esperado) < 32) {
-            self::responder(503, ['error' => 'API del lector deshabilitada: falta RFID_TOKEN en la configuración.']);
-        }
-        $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-        $recibido = preg_match('/^Bearer\s+(\S+)$/i', $cabecera, $m) ? $m[1] : '';
-        if (!hash_equals($esperado, $recibido)) {
-            self::responder(401, ['error' => 'Token inválido.']);
-        }
-    }
-
     /** Lee el cuerpo como JSON o como formulario. */
     public static function datos(): array
     {

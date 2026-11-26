@@ -15,10 +15,11 @@ PHP, MySQL, HTML, CSS y JS. Patrón MVC + DAO, sin frameworks.
 
 - El módulo Reservas permite crear, listar y cancelar reservas pendientes.
 - El módulo Check-In / Check-Out activa y revoca llaves dentro de transacciones.
-- Mientras no exista una conexión serial/USB configurada con el lector RC522/Arduino,
-  la interfaz incluye una lectura RFID simulada mediante un UID hexadecimal. Para
-  integrar el hardware físico se requiere definir el puerto COM, el baud rate, el
-  protocolo de lectura y exponer una API local que devuelva el UID al formulario.
+- El lector RC522 + Arduino se conecta por USB al computador de recepción y el navegador
+  (Chrome o Edge) lo lee con la Web Serial API. Como alternativa, `arduino/puente_serial.py`
+  envía cada lectura al servidor local y a la nube a la vez.
+  Check-in incluye el botón **Simular lectura** para trabajar sin hardware. Ver
+  [docs/hardware.md](docs/hardware.md).
 
 ## Despliegue
 
