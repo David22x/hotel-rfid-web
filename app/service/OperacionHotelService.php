@@ -1,18 +1,15 @@
 <?php
 
-require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../core/ReglaNegocioException.php';
 require_once __DIR__ . '/../dao/ReservaDAO.php';
 require_once __DIR__ . '/../dao/HabitacionDAO.php';
 require_once __DIR__ . '/../dao/LlaveDAO.php';
 require_once __DIR__ . '/../dao/EventoDAO.php';
-require_once __DIR__ . '/../model/EstadoReserva.php';
-require_once __DIR__ . '/../model/EstadoHabitacion.php';
-require_once __DIR__ . '/../model/EstadoLlave.php';
-require_once __DIR__ . '/../model/TipoEvento.php';
 require_once __DIR__ . '/../model/Llave.php';
 require_once __DIR__ . '/../model/Evento.php';
 
+// Check-in y check-out dentro de transacciones
 class OperacionHotelService
 {
     private ReservaDAO $reservaDao;
@@ -36,7 +33,7 @@ class OperacionHotelService
             throw new ReglaNegocioException('El UID debe tener entre 4 y 20 caracteres hexadecimales.');
         }
 
-        $conexion = Database::conectar();
+        $conexion = conectar();
         try {
             $conexion->beginTransaction();
 
@@ -49,7 +46,7 @@ class OperacionHotelService
             if ($fila === false) {
                 throw new ReglaNegocioException('La reserva no existe.');
             }
-            if ($fila['estado'] !== EstadoReserva::PENDIENTE) {
+            if ($fila['estado'] !== 'PENDIENTE') {
                 throw new ReglaNegocioException('Solo se puede hacer check-in de una reserva pendiente.');
             }
 
@@ -72,20 +69,20 @@ class OperacionHotelService
             if ($habitacion === false) {
                 throw new ReglaNegocioException('La habitación no existe.');
             }
-            if ($habitacion['estado'] !== EstadoHabitacion::LIBRE) {
+            if ($habitacion['estado'] !== 'LIBRE') {
                 throw new ReglaNegocioException('La habitación no está disponible para check-in.');
             }
 
             $consultaLlave = $conexion->prepare(
                 'SELECT id FROM llave WHERE uid = ? AND estado = ? LIMIT 1'
             );
-            $consultaLlave->execute([$uid, EstadoLlave::ACTIVA]);
+            $consultaLlave->execute([$uid, 'ACTIVA']);
             if ($consultaLlave->fetch() !== false) {
                 throw new ReglaNegocioException('La tarjeta ya tiene una llave activa.');
             }
 
             $actualizarReserva = $conexion->prepare('UPDATE reserva SET estado = ? WHERE id = ?');
-            $actualizarReserva->execute([EstadoReserva::ACTIVA, $reservaId]);
+            $actualizarReserva->execute(['ACTIVA', $reservaId]);
 
             $crearLlave = $conexion->prepare(
                 'INSERT INTO llave (reserva_id, uid, valida_desde, valida_hasta, estado)
@@ -96,13 +93,13 @@ class OperacionHotelService
                 $uid,
                 $fila['fecha_entrada'],
                 $fila['fecha_salida'],
-                EstadoLlave::ACTIVA,
+                'ACTIVA',
             ]);
 
             $actualizarHabitacion = $conexion->prepare(
                 'UPDATE habitacion SET estado = ? WHERE id = ?'
             );
-            $actualizarHabitacion->execute([EstadoHabitacion::OCUPADA, $habitacionId]);
+            $actualizarHabitacion->execute(['OCUPADA', $habitacionId]);
 
             $crearEvento = $conexion->prepare(
                 'INSERT INTO evento (fecha_hora, tipo, habitacion_id, uid, resultado, detalle)
@@ -111,7 +108,7 @@ class OperacionHotelService
             $ahoraTexto = $ahora->format('Y-m-d H:i:s');
             $crearEvento->execute([
                 $ahoraTexto,
-                TipoEvento::CHECK_IN,
+                'CHECK_IN',
                 $habitacionId,
                 $uid,
                 'EXITO',
@@ -119,7 +116,7 @@ class OperacionHotelService
             ]);
             $crearEvento->execute([
                 $ahoraTexto,
-                TipoEvento::LLAVE_EMITIDA,
+                'LLAVE_EMITIDA',
                 $habitacionId,
                 $uid,
                 'EXITO',
@@ -147,7 +144,7 @@ class OperacionHotelService
 
     public function checkOut(int $reservaId): void
     {
-        $conexion = Database::conectar();
+        $conexion = conectar();
         try {
             $conexion->beginTransaction();
 
@@ -159,7 +156,7 @@ class OperacionHotelService
             if ($fila === false) {
                 throw new ReglaNegocioException('La reserva no existe.');
             }
-            if ($fila['estado'] !== EstadoReserva::ACTIVA) {
+            if ($fila['estado'] !== 'ACTIVA') {
                 throw new ReglaNegocioException('Solo se puede hacer check-out de una reserva activa.');
             }
 
@@ -174,21 +171,21 @@ class OperacionHotelService
             }
 
             $actualizarReserva = $conexion->prepare('UPDATE reserva SET estado = ? WHERE id = ?');
-            $actualizarReserva->execute([EstadoReserva::FINALIZADA, $reservaId]);
+            $actualizarReserva->execute(['FINALIZADA', $reservaId]);
 
             $revocarLlaves = $conexion->prepare(
                 'UPDATE llave SET estado = ? WHERE reserva_id = ? AND estado = ?'
             );
             $revocarLlaves->execute([
-                EstadoLlave::REVOCADA,
+                'REVOCADA',
                 $reservaId,
-                EstadoLlave::ACTIVA,
+                'ACTIVA',
             ]);
 
             $actualizarHabitacion = $conexion->prepare(
                 'UPDATE habitacion SET estado = ? WHERE id = ?'
             );
-            $actualizarHabitacion->execute([EstadoHabitacion::POR_LIMPIAR, $habitacionId]);
+            $actualizarHabitacion->execute(['POR_LIMPIAR', $habitacionId]);
 
             $crearEvento = $conexion->prepare(
                 'INSERT INTO evento (fecha_hora, tipo, habitacion_id, uid, resultado, detalle)
@@ -197,7 +194,7 @@ class OperacionHotelService
             $ahora = (new DateTimeImmutable())->format('Y-m-d H:i:s');
             $crearEvento->execute([
                 $ahora,
-                TipoEvento::CHECK_OUT,
+                'CHECK_OUT',
                 $habitacionId,
                 'EXITO',
                 'Check-out registrado y llaves revocadas para la reserva #' . $reservaId,
@@ -239,7 +236,6 @@ class OperacionHotelService
                 function_exists('mb_substr') ? mb_substr($detalle, 0, 255) : substr($detalle, 0, 255)
             ));
         } catch (Throwable $ignored) {
-            // La bitácora no debe reemplazar el error de negocio original.
         }
     }
 }

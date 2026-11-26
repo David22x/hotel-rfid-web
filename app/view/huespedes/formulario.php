@@ -1,10 +1,4 @@
 <?php
-// Sirve para crear y para editar (como HuespedFormDialog en Java).
-// Variables que llegan desde HuespedController:
-//   $titulo, $error (?string), $datos (array con nombre, documento, correo, telefono)
-?>
-<?php
-// Petición AJAX (desde el modal): se devuelve solo el formulario, sin el layout.
 $esModal = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
 if (!$esModal) {
     $tituloPagina = $titulo;
@@ -19,7 +13,6 @@ if (!$esModal) {
         <div class="alerta error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- action vacío = se envía a la misma URL (incluye ?accion=... y &id=...) -->
     <form method="post" action="" data-modal-form>
         <div class="campo">
             <label for="nombre">Nombre</label>

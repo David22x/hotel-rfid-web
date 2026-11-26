@@ -2,9 +2,7 @@
 
 require_once __DIR__ . '/../service/OperacionHotelService.php';
 require_once __DIR__ . '/../service/ReservaService.php';
-require_once __DIR__ . '/../core/Csrf.php';
 require_once __DIR__ . '/../core/ReglaNegocioException.php';
-require_once __DIR__ . '/../model/EstadoReserva.php';
 
 class CheckInOutController
 {
@@ -19,7 +17,7 @@ class CheckInOutController
 
     public function atender(): void
     {
-        Sesion::exigirPermiso('CHECK_IN_OUT');
+        exigirPermiso('CHECK_IN_OUT');
         $accion = $_GET['accion'] ?? 'listar';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,7 +36,6 @@ class CheckInOutController
     private function checkIn(): void
     {
         try {
-            Csrf::validar();
             $this->operacion->checkIn(
                 (int) ($_POST['reserva_id'] ?? 0),
                 trim($_POST['uid'] ?? '')
@@ -52,7 +49,6 @@ class CheckInOutController
     private function checkOut(): void
     {
         try {
-            Csrf::validar();
             $this->operacion->checkOut((int) ($_POST['reserva_id'] ?? 0));
             $this->redirigir('mensaje', 'Check-out registrado. La habitación quedó pendiente de limpieza.');
         } catch (Throwable $error) {
@@ -69,9 +65,9 @@ class CheckInOutController
 
         try {
             foreach ($this->reservas->listar() as $reserva) {
-                if ($reserva->estado === EstadoReserva::PENDIENTE) {
+                if ($reserva->estado === 'PENDIENTE') {
                     $pendientes[] = $reserva;
-                } elseif ($reserva->estado === EstadoReserva::ACTIVA) {
+                } elseif ($reserva->estado === 'ACTIVA') {
                     $activas[] = $reserva;
                 }
             }

@@ -1,17 +1,11 @@
 <?php
-// Reporte PDF de la bitácora con FPDF. Recibe por GET los mismos filtros de la pantalla.
-
-// Guarda cualquier salida previa (por ejemplo, líneas en blanco de otros archivos)
-// para que no se mezcle con el JSON o el PDF
-ob_start();
 
 require_once __DIR__ . '/../app/bootstrap.php';
 require_once __DIR__ . '/../app/service/BitacoraService.php';
 require_once __DIR__ . '/../app/lib/fpdf/fpdf.php';
 
-Sesion::exigirPermiso('BITACORA');
+exigirPermiso('BITACORA');
 
-// FPDF trabaja en windows-1252, por eso se convierten las tildes y la ñ
 function texto($valor)
 {
     return iconv('UTF-8', 'windows-1252//TRANSLIT', (string) $valor);
@@ -28,7 +22,6 @@ try {
     exit($e->getMessage());
 }
 
-// Descripción de los filtros para la cabecera del reporte
 $rango = ($desde === '' ? 'el inicio' : date('d/m/Y', strtotime($desde)))
     . ' hasta ' . ($hasta === '' ? 'hoy' : date('d/m/Y', strtotime($hasta)));
 $cuarto = $habitacion === '' ? 'todas las habitaciones' : 'habitación ' . $bitacora->numeroDeHabitacion((int) $habitacion);
@@ -43,7 +36,6 @@ $pdf->SetFont('Arial', '', 10);
 $pdf->Cell(277, 6, texto('Desde ' . $rango . ', ' . $cuarto . '. Generado el ' . date('d/m/Y H:i:s')), 0, 1, 'C');
 $pdf->Ln(4);
 
-// Encabezados de la tabla
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->SetFillColor(217, 226, 243);
 $pdf->Cell(38, 8, 'FECHA Y HORA', 1, 0, 'C', true);

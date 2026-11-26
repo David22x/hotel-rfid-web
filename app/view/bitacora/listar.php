@@ -1,7 +1,4 @@
 <?php
-// Variables que llegan desde BitacoraController::atender():
-//   $eventos (arreglos que devuelve EventoDAO::listar), $habitaciones (Habitacion[]),
-//   $filtros (desde, hasta, habitacion), $consultaReporte (string), $error (?string)
 $tituloPagina = 'Bitácora';
 $activo = 'bitacora';
 require __DIR__ . '/../layout/inicio.php';
@@ -14,7 +11,6 @@ require __DIR__ . '/../layout/inicio.php';
         <div class="alerta error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- Los filtros viajan por GET, así la URL se puede recargar o compartir -->
     <form method="get" action="bitacora.php" class="filtros">
         <div class="campo">
             <label for="desde">Desde</label>

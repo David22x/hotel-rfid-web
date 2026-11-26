@@ -1,10 +1,4 @@
 <?php
-// Equivale a CambiarEstadoDialog en Java.
-// Variables que llegan desde HabitacionController::cambiarEstado():
-//   $habitacion (Habitacion)
-?>
-<?php
-// Petición AJAX (desde el modal): se devuelve solo el formulario, sin el layout.
 $esModal = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
 if (!$esModal) {
     $tituloPagina = 'Cambiar estado';
@@ -19,7 +13,7 @@ if (!$esModal) {
         <div class="campo">
             <label for="estado">Nuevo estado</label>
             <select id="estado" name="estado">
-                <?php foreach (HabitacionService::ESTADOS as $estado): ?>
+                <?php foreach ($this->service->estados as $estado): ?>
                     <option value="<?= $estado ?>" <?= $estado === $habitacion->estado ? 'selected' : '' ?>><?= $estado ?></option>
                 <?php endforeach; ?>
             </select>

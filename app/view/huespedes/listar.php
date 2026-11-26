@@ -1,8 +1,4 @@
 <?php
-// Variables que llegan desde HuespedController::listar():
-//   $huespedes (Huesped[]), $termino (string), $mensaje (?string), $error (?string)
-?>
-<?php
 $tituloPagina = 'Huéspedes';
 $activo = 'huespedes';
 require __DIR__ . '/../layout/inicio.php';
@@ -17,7 +13,6 @@ require __DIR__ . '/../layout/inicio.php';
     <?php endif; ?>
 
     <div class="barra">
-        <!-- Búsqueda: un formulario GET pone ?buscar=... en la URL -->
         <form method="get" action="huespedes.php">
             <input type="text" id="buscar" name="buscar" placeholder="Nombre o documento"
                    value="<?= htmlspecialchars($termino) ?>">

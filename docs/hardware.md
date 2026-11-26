@@ -90,7 +90,6 @@ prepararLector(async function (uid) {
     const datos = new FormData();
     datos.append('uid', uid);
     datos.append('habitacion_id', document.getElementById('habitacion_id').value);
-    datos.append('csrf_token', document.querySelector('input[name=csrf_token]').value);
 
     const respuesta = await fetch('api/validar_acceso.php', { method: 'POST', body: datos });
     const resultado = await respuesta.json(); // { permitido: true/false, motivo: "..." }

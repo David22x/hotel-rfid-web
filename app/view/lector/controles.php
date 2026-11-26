@@ -1,11 +1,3 @@
-<?php
-/*
- * Controles del lector RFID (Michael).
- * Se incluye dentro de las vistas de check-in y cerradura con:
- *   <?php require __DIR__ . '/../lector/controles.php'; ?>
- * Después, el JS de la pantalla llama: prepararLector(function (uid) { ... });
- */
-?>
 <fieldset class="lector-rfid">
     <legend>Lector RFID</legend>
 

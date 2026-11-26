@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../model/Huesped.php';
 
 class HuespedDAO
@@ -8,25 +8,25 @@ class HuespedDAO
     public function listar(): array
     {
         $sql = 'SELECT id, nombre, documento, correo, telefono FROM huesped ORDER BY nombre';
-        $consulta = Database::conectar()->prepare($sql);
+        $consulta = conectar()->prepare($sql);
         $consulta->execute();
         return array_map([$this, 'hidratar'], $consulta->fetchAll());
     }
 
     public function buscar(string $termino): array
     {
-        $patron = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], trim($termino)) . '%';
+        $patron = '%' . str_replace(['!', '%', '_'], ['!!', '!%', '!_'], trim($termino)) . '%';
         $sql = 'SELECT id, nombre, documento, correo, telefono FROM huesped
-                WHERE nombre LIKE ? ESCAPE "\\" OR documento LIKE ? ESCAPE "\\" OR correo LIKE ? ESCAPE "\\"
+                WHERE LOWER(nombre) LIKE LOWER(?) ESCAPE \'!\' OR LOWER(documento) LIKE LOWER(?) ESCAPE \'!\' OR LOWER(correo) LIKE LOWER(?) ESCAPE \'!\'
                 ORDER BY nombre';
-        $consulta = Database::conectar()->prepare($sql);
+        $consulta = conectar()->prepare($sql);
         $consulta->execute([$patron, $patron, $patron]);
         return array_map([$this, 'hidratar'], $consulta->fetchAll());
     }
 
     public function buscarPorId(int $id): ?Huesped
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT id, nombre, documento, correo, telefono FROM huesped WHERE id = ?'
         );
         $consulta->execute([$id]);
@@ -36,7 +36,7 @@ class HuespedDAO
 
     public function buscarPorDocumento(string $documento): ?Huesped
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT id, nombre, documento, correo, telefono FROM huesped WHERE documento = ?'
         );
         $consulta->execute([$documento]);
@@ -46,7 +46,7 @@ class HuespedDAO
 
     public function crear(Huesped $huesped): int
     {
-        $conexion = Database::conectar();
+        $conexion = conectar();
         $consulta = $conexion->prepare(
             'INSERT INTO huesped (nombre, documento, correo, telefono) VALUES (?, ?, ?, ?)'
         );
@@ -56,12 +56,12 @@ class HuespedDAO
             $huesped->correo,
             $huesped->telefono,
         ]);
-        return Database::ultimoId($conexion, 'huesped');
+        return ultimoId($conexion, 'huesped');
     }
 
     public function actualizar(Huesped $huesped): void
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'UPDATE huesped SET nombre = ?, documento = ?, correo = ?, telefono = ? WHERE id = ?'
         );
         $consulta->execute([
@@ -75,7 +75,7 @@ class HuespedDAO
 
     public function eliminar(int $id): void
     {
-        $consulta = Database::conectar()->prepare('DELETE FROM huesped WHERE id = ?');
+        $consulta = conectar()->prepare('DELETE FROM huesped WHERE id = ?');
         $consulta->execute([$id]);
     }
 

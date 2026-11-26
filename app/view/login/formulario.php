@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -19,7 +18,6 @@
         <?php endif; ?>
 
         <form method="post" action="login.php">
-            <?php Csrf::campo(); ?>
 
             <p>
                 <label for="usuario">Usuario</label>

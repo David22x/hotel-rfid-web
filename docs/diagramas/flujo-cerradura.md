@@ -1,14 +1,14 @@
 # Diagrama de flujo de la cerradura
 
 Muestra lo que pasa desde que se acerca una tarjeta a la puerta hasta que se enciende el LED.
-Lo implementan `cerradura.js`, `api/validar_acceso.php` y `CerraduraService::validar(...)`.
+Lo implementan `cerradura.js`, `api/validar_acceso.php` y `CerraduraService->validar(...)`.
 
 ```mermaid
 flowchart TD
     A([Se acerca una tarjeta]) --> B{¿Lector real o simulador?}
     B -- Lector RC522 --> C[El Arduino envía el UID por Web Serial]
     B -- Simulador --> D[Se escribe el UID en cerradura.php]
-    C --> E[cerradura.js envía el UID con $.post a api/validar_acceso.php]
+    C --> E[cerradura.js envía el UID con fetch a api/validar_acceso.php]
     D --> E
     E --> V{¿Sesión, permiso y token CSRF válidos?}
     V -- No --> ERR[Responde un error en JSON]

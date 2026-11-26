@@ -2,9 +2,6 @@
 
 require_once __DIR__ . '/../service/HabitacionService.php';
 
-// TODO: cuando exista el login, verificar que el rol sea ADMIN para
-// crear, editar, eliminar y cambiar estado (el recepcionista solo consulta).
-
 class HabitacionController
 {
     private HabitacionService $service;
@@ -14,10 +11,9 @@ class HabitacionController
         $this->service = new HabitacionService();
     }
 
-    // Punto de entrada: lee ?accion= de la URL y llama al método que toca.
-    // En Java esto lo hacían los addActionListener de cada botón.
     public function atender(): void
     {
+        exigirPermiso('HABITACIONES');
         $accion = $_GET['accion'] ?? 'listar';
 
         if ($accion === 'crear') {
@@ -32,8 +28,6 @@ class HabitacionController
             $this->listar();
         }
     }
-
-    // ---------- ACCIONES ----------
 
     private function listar(): void
     {
@@ -55,10 +49,8 @@ class HabitacionController
         $titulo = 'Nueva habitación';
         $esNueva = true;
         $error = null;
-        // Valores iniciales del formulario vacío
-        $datos = ['numero' => '', 'piso' => '', 'tipo' => 'Simple', 'estado' => EstadoHabitacion::LIBRE];
+        $datos = ['numero' => '', 'piso' => '', 'tipo' => 'Simple', 'estado' => 'LIBRE'];
 
-        // Si el formulario se envió, intentamos guardar
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $datos = $this->leerFormulario();
             try {
@@ -67,12 +59,9 @@ class HabitacionController
                 $this->volverAlListado('mensaje', 'Habitación creada correctamente');
             } catch (Exception $e) {
                 $error = $e->getMessage();
-            } catch (Exception $e) {
-                $error = 'Error inesperado: ' . $e->getMessage();
             }
         }
 
-        // Si es la primera vez (GET) o hubo un error, mostramos el formulario
         require __DIR__ . '/../view/habitaciones/formulario.php';
     }
 
@@ -87,7 +76,6 @@ class HabitacionController
         $titulo = 'Editar habitación';
         $esNueva = false;
         $error = null;
-        // Rellenamos el formulario con los datos actuales
         $datos = [
             'numero' => $original->numero,
             'piso' => $original->piso,
@@ -103,8 +91,6 @@ class HabitacionController
                 $this->volverAlListado('mensaje', 'Habitación actualizada correctamente');
             } catch (Exception $e) {
                 $error = $e->getMessage();
-            } catch (Exception $e) {
-                $error = 'Error inesperado: ' . $e->getMessage();
             }
         }
 
@@ -113,7 +99,6 @@ class HabitacionController
 
     private function eliminar(): void
     {
-        // Solo se elimina con POST (desde el botón), nunca con un simple enlace
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->volverAlListado('error', 'Acción no permitida');
         }
@@ -124,8 +109,6 @@ class HabitacionController
             $this->volverAlListado('mensaje', 'Habitación eliminada');
         } catch (Exception $e) {
             $this->volverAlListado('error', $e->getMessage());
-        } catch (Exception $e) {
-            $this->volverAlListado('error', 'Error inesperado: ' . $e->getMessage());
         }
     }
 
@@ -149,35 +132,27 @@ class HabitacionController
                 $this->volverAlListado('mensaje', 'Estado actualizado a ' . $nuevo);
             } catch (Exception $e) {
                 $this->volverAlListado('error', $e->getMessage());
-            } catch (Exception $e) {
-                $this->volverAlListado('error', 'Error inesperado: ' . $e->getMessage());
             }
         }
 
         require __DIR__ . '/../view/habitaciones/cambiar_estado.php';
     }
 
-    // ---------- AYUDANTES ----------
-
-    // Lee los campos que llegaron del formulario (siempre llegan como texto)
     private function leerFormulario(): array
     {
         return [
             'numero' => trim($_POST['numero'] ?? ''),
             'piso' => trim($_POST['piso'] ?? ''),
             'tipo' => $_POST['tipo'] ?? '',
-            // Al crear, el <select> de estado está deshabilitado y no se envía
-            'estado' => $_POST['estado'] ?? EstadoHabitacion::LIBRE,
+            'estado' => $_POST['estado'] ?? 'LIBRE',
         ];
     }
 
-    // Validación de formato (lo que en Java hacía HabitacionFormDialog.onAceptar)
     private function armarHabitacion(array $datos, ?int $id): Habitacion
     {
         if ($datos['numero'] === '') {
             throw new Exception('El número es obligatorio');
         }
-        // ctype_digit: true solo si son puros dígitos (así descarta negativos y decimales)
         if (!ctype_digit($datos['piso'])) {
             throw new Exception('El piso debe ser un número mayor o igual a 0');
         }
@@ -185,8 +160,6 @@ class HabitacionController
         return new Habitacion($datos['numero'], (int) $datos['piso'], $datos['tipo'], $datos['estado'], $id);
     }
 
-    // Guarda un aviso en la sesión y redirige al listado.
-    // Así el mensaje sobrevive a la redirección (equivale a los JOptionPane de Java).
     private function volverAlListado(string $tipo, string $texto): void
     {
         $_SESSION[$tipo] = $texto;
@@ -194,7 +167,6 @@ class HabitacionController
         exit;
     }
 
-    // Lee un aviso de la sesión y lo borra para que no se muestre dos veces
     private function tomarAviso(string $tipo): ?string
     {
         $texto = $_SESSION[$tipo] ?? null;

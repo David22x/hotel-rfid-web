@@ -15,7 +15,6 @@ require __DIR__ . '/../layout/inicio.php';
 <h2>Check-in</h2>
 <?php require __DIR__ . '/../lector/controles.php'; ?>
 <form method="post" action="checkin.php?accion=checkin" class="form-grid">
-    <?php Csrf::campo(); ?>
     <div class="campo">
         <label for="reserva_checkin">Reserva pendiente</label>
         <select id="reserva_checkin" name="reserva_id" required>
@@ -58,7 +57,6 @@ require __DIR__ . '/../layout/inicio.php';
             <td><?= htmlspecialchars($reserva->fechaSalida, ENT_QUOTES, 'UTF-8') ?></td>
             <td class="acciones tabla-acciones">
                 <form method="post" action="checkin.php?accion=checkout" onsubmit="return confirm('¿Registrar el check-out de esta reserva?')">
-                    <?php Csrf::campo(); ?>
                     <input type="hidden" name="reserva_id" value="<?= (int) $reserva->id ?>">
                     <button type="submit" class="btn-sm">Check-out</button>
                 </form>

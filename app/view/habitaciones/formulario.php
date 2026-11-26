@@ -1,11 +1,4 @@
 <?php
-// Sirve para crear y para editar (como HabitacionFormDialog en Java).
-// Variables que llegan desde HabitacionController:
-//   $titulo, $esNueva (bool), $error (?string),
-//   $datos (array con numero, piso, tipo, estado)
-?>
-<?php
-// Petición AJAX (desde el modal): se devuelve solo el formulario, sin el layout.
 $esModal = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
 if (!$esModal) {
     $tituloPagina = $titulo;
@@ -20,7 +13,6 @@ if (!$esModal) {
         <div class="alerta error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- action vacío = se envía a la misma URL (incluye ?accion=... y &id=...) -->
     <form method="post" action="" data-modal-form>
         <div class="campo">
             <label for="numero">Número</label>
@@ -33,16 +25,15 @@ if (!$esModal) {
         <div class="campo">
             <label for="tipo">Tipo</label>
             <select id="tipo" name="tipo">
-                <?php foreach (HabitacionService::TIPOS as $tipo): ?>
+                <?php foreach ($this->service->tipos as $tipo): ?>
                     <option value="<?= $tipo ?>" <?= $tipo === $datos['tipo'] ? 'selected' : '' ?>><?= $tipo ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
         <div class="campo">
             <label for="estado">Estado</label>
-            <!-- Al crear el estado no se puede elegir: siempre empieza LIBRE -->
             <select id="estado" name="estado" <?= $esNueva ? 'disabled' : '' ?>>
-                <?php foreach (HabitacionService::ESTADOS as $estado): ?>
+                <?php foreach ($this->service->estados as $estado): ?>
                     <option value="<?= $estado ?>" <?= $estado === $datos['estado'] ? 'selected' : '' ?>><?= $estado ?></option>
                 <?php endforeach; ?>
             </select>
