@@ -33,6 +33,21 @@ class EventoDAO
         return $this->crear(new Evento(date('Y-m-d H:i:s'), $tipo, $habitacionId, $uid, $resultado, $detalle));
     }
 
+    // Registra un intento fallido sin reemplazar el error original
+    public function registrarFallo(
+        string $tipo,
+        ?int $habitacionId,
+        ?string $uid,
+        string $resultado,
+        string $detalle
+    ): void {
+        try {
+            $detalle = function_exists('mb_substr') ? mb_substr($detalle, 0, 255) : substr($detalle, 0, 255);
+            $this->registrar($tipo, $habitacionId, $uid, $resultado, $detalle);
+        } catch (Throwable $ignorado) {
+        }
+    }
+
     public function listar(?string $desde = null, ?string $hasta = null, ?int $habitacionId = null): array
     {
         $sql = 'SELECT e.id, e.fecha_hora, e.tipo, e.habitacion_id, e.uid, e.resultado, e.detalle,

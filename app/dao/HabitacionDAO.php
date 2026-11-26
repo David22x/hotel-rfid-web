@@ -24,6 +24,17 @@ class HabitacionDAO
         return $fila === false ? null : $this->hidratar($fila);
     }
 
+    // Bloquea la fila hasta terminar la transacción
+    public function buscarParaActualizar(int $id): ?Habitacion
+    {
+        $consulta = conectar()->prepare(
+            'SELECT id, numero, piso, tipo, estado FROM habitacion WHERE id = ? FOR UPDATE'
+        );
+        $consulta->execute([$id]);
+        $fila = $consulta->fetch();
+        return $fila === false ? null : $this->hidratar($fila);
+    }
+
     public function buscarPorNumero(string $numero): ?Habitacion
     {
         $consulta = conectar()->prepare(

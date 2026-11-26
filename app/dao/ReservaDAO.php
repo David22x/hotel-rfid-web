@@ -34,6 +34,18 @@ class ReservaDAO
         return $fila === false ? null : $this->crearDesdeFila($fila);
     }
 
+    // Bloquea la fila hasta terminar la transacción
+    public function buscarParaActualizar(int $id): ?Reserva
+    {
+        $consulta = conectar()->prepare(
+            'SELECT id, huesped_id, habitacion_id, fecha_entrada, fecha_salida, estado
+             FROM reserva WHERE id = ? FOR UPDATE'
+        );
+        $consulta->execute([$id]);
+        $fila = $consulta->fetch();
+        return $fila === false ? null : $this->crearDesdeFila($fila);
+    }
+
     public function buscarPendientes(): array
     {
         $consulta = conectar()->prepare(
