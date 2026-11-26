@@ -7,7 +7,7 @@ class Reserva
         public int $habitacionId,
         public string $fechaEntrada,
         public string $fechaSalida,
-        public string $estado = EstadoReserva::PENDIENTE,
+        public string $estado = 'PENDIENTE',
         public ?int $id = null,
         public ?string $huespedNombre = null,
         public ?string $habitacionNumero = null,

@@ -14,10 +14,9 @@ class BitacoraController
         $this->habitacionDao = new HabitacionDAO();
     }
 
-    // Muestra la tabla de eventos con los filtros que llegan por GET
     public function atender(): void
     {
-        Sesion::exigirPermiso('BITACORA');
+        exigirPermiso('BITACORA');
 
         $filtros = $this->leerFiltros();
         $eventos = [];
@@ -27,13 +26,12 @@ class BitacoraController
         try {
             $habitaciones = $this->habitacionDao->listar();
             $eventos = $this->service->listar($filtros['desde'], $filtros['hasta'], $filtros['habitacion']);
-        } catch (ReglaNegocioException $e) {
-            $error = $e->getMessage();
         } catch (Throwable $e) {
-            $error = 'No se pudo cargar la bitácora: ' . $e->getMessage();
+            $error = get_class($e) === 'Exception'
+                ? $e->getMessage()
+                : 'No se pudo cargar la bitácora: ' . $e->getMessage();
         }
 
-        // Los mismos filtros se pasan al reporte PDF
         $consultaReporte = 'desde=' . $filtros['desde'] . '&hasta=' . $filtros['hasta'] . '&habitacion=' . $filtros['habitacion'];
 
         require __DIR__ . '/../view/bitacora/listar.php';

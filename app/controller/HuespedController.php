@@ -2,9 +2,6 @@
 
 require_once __DIR__ . '/../service/HuespedService.php';
 
-// TODO: cuando exista el login, verificar que haya una sesión iniciada
-// (ADMIN y RECEPCIONISTA pueden gestionar huéspedes).
-
 class HuespedController
 {
     private HuespedService $service;
@@ -14,9 +11,9 @@ class HuespedController
         $this->service = new HuespedService();
     }
 
-    // Punto de entrada: lee ?accion= de la URL y llama al método que toca.
     public function atender(): void
     {
+        exigirPermiso('HUESPEDES');
         $accion = $_GET['accion'] ?? 'listar';
 
         if ($accion === 'crear') {
@@ -30,8 +27,6 @@ class HuespedController
         }
     }
 
-    // ---------- LISTADO Y BÚSQUEDA ----------
-
     private function listar(): void
     {
         $huespedes = [];
@@ -40,7 +35,6 @@ class HuespedController
         $error = $this->tomarAviso('error');
 
         try {
-            // buscar('') devuelve todos, así que sirve para ambos casos
             $huespedes = $this->service->buscar($termino);
             if ($termino !== '' && count($huespedes) === 0) {
                 $mensaje = 'No se encontraron huéspedes para: ' . $termino;
@@ -51,8 +45,6 @@ class HuespedController
 
         require __DIR__ . '/../view/huespedes/listar.php';
     }
-
-    // ---------- CRUD ----------
 
     private function crear(): void
     {
@@ -68,8 +60,6 @@ class HuespedController
                 $this->volverAlListado('mensaje', 'Huésped registrado correctamente');
             } catch (Exception $e) {
                 $error = $e->getMessage();
-            } catch (Exception $e) {
-                $error = 'Error inesperado: ' . $e->getMessage();
             }
         }
 
@@ -101,8 +91,6 @@ class HuespedController
                 $this->volverAlListado('mensaje', 'Huésped actualizado correctamente');
             } catch (Exception $e) {
                 $error = $e->getMessage();
-            } catch (Exception $e) {
-                $error = 'Error inesperado: ' . $e->getMessage();
             }
         }
 
@@ -111,7 +99,6 @@ class HuespedController
 
     private function eliminar(): void
     {
-        // Solo se elimina con POST (desde el botón), nunca con un simple enlace
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->volverAlListado('error', 'Acción no permitida');
         }
@@ -122,14 +109,9 @@ class HuespedController
             $this->volverAlListado('mensaje', 'Huésped eliminado');
         } catch (Exception $e) {
             $this->volverAlListado('error', $e->getMessage());
-        } catch (Exception $e) {
-            $this->volverAlListado('error', 'Error inesperado: ' . $e->getMessage());
         }
     }
 
-    // ---------- AYUDANTES ----------
-
-    // Correo y teléfono vacíos quedan como '' (en MySQL son NOT NULL)
     private function leerFormulario(): array
     {
         return [

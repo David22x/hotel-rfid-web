@@ -1,53 +1,50 @@
-// Pantalla de la cerradura RFID.
-// Usa $.post de jQuery para validar la tarjeta sin recargar la página.
-
-// Envía el UID al servidor, que revisa las 5 reglas y responde en JSON
-function validarTarjeta(uid) {
-    var datos = {
-        csrf_token: document.getElementById("csrf").value,
-        habitacion_id: document.getElementById("cmbHabitacion").value,
+// Envía la tarjeta al servidor y muestra el resultado
+async function validarTarjeta(uid) {
+    const datos = new URLSearchParams({
+        habitacion_id: document.getElementById('cmbHabitacion').value,
         uid: uid
-    };
+    });
+    let respuesta;
+    try {
+        const r = await fetch('api/validar_acceso.php', { method: 'POST', body: datos });
+        respuesta = await r.json();
+    } catch (error) {
+        alert('No se pudo validar la tarjeta.');
+        return;
+    }
+    if (!respuesta.ok) {
+        alert(respuesta.error);
+        return;
+    }
 
-    $.post("api/validar_acceso.php", datos, function (respuesta) {
-        if (!respuesta.ok) {
-            alert(respuesta.error);
-            return;
-        }
-
-        mostrarResultado(respuesta);
-        document.getElementById("lblUltimo").innerText = respuesta.ultimoEvento;
-
-        // Responde OK o NO al Arduino para encender el LED verde o rojo.
-        // Si no hay lector conectado (simulador), no hace nada.
-        LectorRFID.enviar(respuesta.respuesta);
-    }, "json");
+    mostrarResultado(respuesta);
+    document.getElementById('lblUltimo').innerText = respuesta.ultimoEvento;
+    LectorRFID.enviar(respuesta.respuesta);
 }
 
-// Pinta el círculo de verde o rojo y a los 4 segundos lo regresa a gris
+// Indicador verde o rojo durante 4 segundos
 function mostrarResultado(respuesta) {
-    var indicador = document.getElementById("indicador");
-    var resultado = document.getElementById("lblResultado");
+    const indicador = document.getElementById('indicador');
+    const resultado = document.getElementById('lblResultado');
 
     if (respuesta.concedido) {
-        indicador.className = "indicador concedido";
-        resultado.innerText = "ACCESO CONCEDIDO";
+        indicador.className = 'indicador concedido';
+        resultado.innerText = 'ACCESO CONCEDIDO';
     } else {
-        indicador.className = "indicador denegado";
-        resultado.innerText = "ACCESO DENEGADO";
+        indicador.className = 'indicador denegado';
+        resultado.innerText = 'ACCESO DENEGADO';
     }
-    document.getElementById("lblDetalle").innerText = respuesta.mensaje + " (UID " + respuesta.uid + ")";
+    document.getElementById('lblDetalle').innerText = respuesta.mensaje + ' (UID ' + respuesta.uid + ')';
 
     setTimeout(mostrarEsperando, 4000);
 }
 
 function mostrarEsperando() {
-    document.getElementById("indicador").className = "indicador esperando";
-    document.getElementById("lblResultado").innerText = "Esperando tarjeta";
-    document.getElementById("lblDetalle").innerText = "";
+    document.getElementById('indicador').className = 'indicador esperando';
+    document.getElementById('lblResultado').innerText = 'Esperando tarjeta';
+    document.getElementById('lblDetalle').innerText = '';
 }
 
-// Cada UID que llega del lector o del simulador de Michael se valida en el servidor
-if (document.getElementById("csrf")) {
+if (document.getElementById('cmbHabitacion')) {
     prepararLector(validarTarjeta);
 }

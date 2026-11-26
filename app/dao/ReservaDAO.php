@@ -1,14 +1,13 @@
 <?php
 
-require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../model/Reserva.php';
-require_once __DIR__ . '/../model/EstadoReserva.php';
 
 class ReservaDAO
 {
     public function listar(): array
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT r.id, r.huesped_id, r.habitacion_id, r.fecha_entrada, r.fecha_salida, r.estado,
                     h.nombre AS huesped_nombre, hab.numero AS habitacion_numero
              FROM reserva r
@@ -22,7 +21,7 @@ class ReservaDAO
 
     public function buscarPorId(int $id): ?Reserva
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT r.id, r.huesped_id, r.habitacion_id, r.fecha_entrada, r.fecha_salida, r.estado,
                     h.nombre AS huesped_nombre, hab.numero AS habitacion_numero
              FROM reserva r
@@ -35,9 +34,21 @@ class ReservaDAO
         return $fila === false ? null : $this->crearDesdeFila($fila);
     }
 
+    // Bloquea la fila hasta terminar la transacción
+    public function buscarParaActualizar(int $id): ?Reserva
+    {
+        $consulta = conectar()->prepare(
+            'SELECT id, huesped_id, habitacion_id, fecha_entrada, fecha_salida, estado
+             FROM reserva WHERE id = ? FOR UPDATE'
+        );
+        $consulta->execute([$id]);
+        $fila = $consulta->fetch();
+        return $fila === false ? null : $this->crearDesdeFila($fila);
+    }
+
     public function buscarPendientes(): array
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT r.id, r.huesped_id, r.habitacion_id, r.fecha_entrada, r.fecha_salida, r.estado,
                     h.nombre AS huesped_nombre, hab.numero AS habitacion_numero
              FROM reserva r
@@ -46,13 +57,13 @@ class ReservaDAO
              WHERE r.estado = ?
              ORDER BY r.fecha_entrada'
         );
-        $consulta->execute([EstadoReserva::PENDIENTE]);
+        $consulta->execute(['PENDIENTE']);
         return array_map([$this, 'crearDesdeFila'], $consulta->fetchAll());
     }
 
     public function crear(Reserva $reserva): int
     {
-        $conexion = Database::conectar();
+        $conexion = conectar();
         $consulta = $conexion->prepare(
             'INSERT INTO reserva (huesped_id, habitacion_id, fecha_entrada, fecha_salida, estado)
              VALUES (?, ?, ?, ?, ?)'
@@ -64,7 +75,7 @@ class ReservaDAO
             $reserva->fechaSalida,
             $reserva->estado,
         ]);
-        return (int) $conexion->lastInsertId();
+        return ultimoId($conexion, 'reserva');
     }
 
     public function actualizar(Reserva $reserva): void
@@ -73,7 +84,7 @@ class ReservaDAO
             throw new InvalidArgumentException('Se requiere el ID de la reserva para actualizarla.');
         }
 
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'UPDATE reserva
              SET huesped_id = ?, habitacion_id = ?, fecha_entrada = ?, fecha_salida = ?
              WHERE id = ?'
@@ -89,7 +100,7 @@ class ReservaDAO
 
     public function actualizarEstado(int $id, string $estado): void
     {
-        $consulta = Database::conectar()->prepare('UPDATE reserva SET estado = ? WHERE id = ?');
+        $consulta = conectar()->prepare('UPDATE reserva SET estado = ? WHERE id = ?');
         $consulta->execute([$estado, $id]);
     }
 
@@ -106,8 +117,8 @@ class ReservaDAO
                   AND fecha_salida > ?';
         $parametros = [
             $habitacionId,
-            EstadoReserva::PENDIENTE,
-            EstadoReserva::ACTIVA,
+            'PENDIENTE',
+            'ACTIVA',
             $fechaSalida,
             $fechaEntrada,
         ];
@@ -117,14 +128,14 @@ class ReservaDAO
             $parametros[] = $excluirId;
         }
 
-        $consulta = Database::conectar()->prepare($sql);
+        $consulta = conectar()->prepare($sql);
         $consulta->execute($parametros);
         return (int) $consulta->fetchColumn() > 0;
     }
 
     public function existenPorHabitacion(int $habitacionId): bool
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT COUNT(*) FROM reserva WHERE habitacion_id = ?'
         );
         $consulta->execute([$habitacionId]);
@@ -133,7 +144,7 @@ class ReservaDAO
 
     public function existenPorHuesped(int $huespedId): bool
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT COUNT(*) FROM reserva WHERE huesped_id = ?'
         );
         $consulta->execute([$huespedId]);
@@ -142,12 +153,12 @@ class ReservaDAO
 
     public function existeActivaPorHabitacion(int $habitacionId): bool
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT EXISTS (
                  SELECT 1 FROM reserva WHERE habitacion_id = ? AND estado = ?
              )'
         );
-        $consulta->execute([$habitacionId, EstadoReserva::ACTIVA]);
+        $consulta->execute([$habitacionId, 'ACTIVA']);
         return (bool) $consulta->fetchColumn();
     }
 

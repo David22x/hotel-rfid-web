@@ -1,20 +1,11 @@
 <?php
-// Variables que llegan desde HabitacionController::listar():
-//   $habitaciones (Habitacion[]), $mensaje (?string), $error (?string)
-?>
-<?php
 $tituloPagina = 'Habitaciones';
 $activo = 'habitaciones';
 require __DIR__ . '/../layout/inicio.php';
 ?>
     <h1>Habitaciones</h1>
 
-    <?php if ($mensaje): ?>
-        <div class="alerta ok"><?= htmlspecialchars($mensaje) ?></div>
-    <?php endif; ?>
-    <?php if ($error): ?>
-        <div class="alerta error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
     <div class="barra">
         <a href="habitaciones.php?accion=crear" class="btn btn-primario" data-modal>+ Crear</a>
@@ -43,7 +34,6 @@ require __DIR__ . '/../layout/inicio.php';
                 <td class="acciones">
                     <a href="habitaciones.php?accion=editar&id=<?= $h->id ?>" class="btn btn-sm" data-modal>Editar</a>
                     <a href="habitaciones.php?accion=cambiarEstado&id=<?= $h->id ?>" class="btn btn-sm" data-modal>Cambiar estado</a>
-                    <!-- Eliminar usa un formulario POST y pide confirmación con JavaScript -->
                     <form method="post" action="habitaciones.php?accion=eliminar"
                           onsubmit="return confirm('¿Eliminar esta habitación?')">
                         <input type="hidden" name="id" value="<?= $h->id ?>">

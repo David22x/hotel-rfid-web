@@ -1,13 +1,13 @@
 <?php
 
-require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../model/Evento.php';
 
 class EventoDAO
 {
     public function crear(Evento $evento): int
     {
-        $conexion = Database::conectar();
+        $conexion = conectar();
         $consulta = $conexion->prepare(
             'INSERT INTO evento (fecha_hora, tipo, habitacion_id, uid, resultado, detalle)
              VALUES (?, ?, ?, ?, ?, ?)'
@@ -20,7 +20,7 @@ class EventoDAO
             $evento->resultado,
             $evento->detalle,
         ]);
-        return (int) $conexion->lastInsertId();
+        return ultimoId($conexion, 'evento');
     }
 
     public function registrar(
@@ -33,7 +33,21 @@ class EventoDAO
         return $this->crear(new Evento(date('Y-m-d H:i:s'), $tipo, $habitacionId, $uid, $resultado, $detalle));
     }
 
-    // Los límites de fecha y hora son inclusivos cuando se indican.
+    // Registra un intento fallido sin reemplazar el error original
+    public function registrarFallo(
+        string $tipo,
+        ?int $habitacionId,
+        ?string $uid,
+        string $resultado,
+        string $detalle
+    ): void {
+        try {
+            $detalle = function_exists('mb_substr') ? mb_substr($detalle, 0, 255) : substr($detalle, 0, 255);
+            $this->registrar($tipo, $habitacionId, $uid, $resultado, $detalle);
+        } catch (Throwable $ignorado) {
+        }
+    }
+
     public function listar(?string $desde = null, ?string $hasta = null, ?int $habitacionId = null): array
     {
         $sql = 'SELECT e.id, e.fecha_hora, e.tipo, e.habitacion_id, e.uid, e.resultado, e.detalle,
@@ -60,7 +74,7 @@ class EventoDAO
         }
         $sql .= ' ORDER BY e.fecha_hora DESC, e.id DESC LIMIT 300';
 
-        $consulta = Database::conectar()->prepare($sql);
+        $consulta = conectar()->prepare($sql);
         $consulta->execute($parametros);
         $filas = $consulta->fetchAll();
         $eventos = [];

@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/EstadoLlave.php';
-
 class Llave
 {
     public function __construct(
@@ -9,7 +7,7 @@ class Llave
         public string $uid,
         public string $validaDesde,
         public string $validaHasta,
-        public string $estado = EstadoLlave::ACTIVA,
+        public string $estado = 'ACTIVA',
         public ?int $id = null,
     ) {
     }

@@ -1,23 +1,13 @@
 <?php
-// Variables que llegan desde HuespedController::listar():
-//   $huespedes (Huesped[]), $termino (string), $mensaje (?string), $error (?string)
-?>
-<?php
 $tituloPagina = 'Huéspedes';
 $activo = 'huespedes';
 require __DIR__ . '/../layout/inicio.php';
 ?>
     <h1>Huéspedes</h1>
 
-    <?php if ($mensaje): ?>
-        <div class="alerta ok"><?= htmlspecialchars($mensaje) ?></div>
-    <?php endif; ?>
-    <?php if ($error): ?>
-        <div class="alerta error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
     <div class="barra">
-        <!-- Búsqueda: un formulario GET pone ?buscar=... en la URL -->
         <form method="get" action="huespedes.php">
             <input type="text" id="buscar" name="buscar" placeholder="Nombre o documento"
                    value="<?= htmlspecialchars($termino) ?>">

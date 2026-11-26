@@ -5,15 +5,9 @@ require __DIR__ . '/../layout/inicio.php';
 ?>
 <h1>Reservas</h1>
 
-<?php if ($mensaje): ?>
-    <div class="alerta ok"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div>
-<?php endif; ?>
-<?php if ($error): ?>
-    <div class="alerta error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
-<?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
 <form method="post" action="reservas.php?accion=crear" class="form-grid">
-    <?php Csrf::campo(); ?>
     <div class="campo">
         <label for="huesped_id">Huésped</label>
         <select id="huesped_id" name="huesped_id" required>
@@ -89,9 +83,8 @@ require __DIR__ . '/../layout/inicio.php';
             <td><?= htmlspecialchars($reserva->fechaSalida, ENT_QUOTES, 'UTF-8') ?></td>
             <td><span class="badge badge-<?= htmlspecialchars($reserva->estado, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($reserva->estado, ENT_QUOTES, 'UTF-8') ?></span></td>
             <td class="acciones tabla-acciones">
-                <?php if ($reserva->estado === EstadoReserva::PENDIENTE): ?>
+                <?php if ($reserva->estado === 'PENDIENTE'): ?>
                     <form method="post" action="reservas.php?accion=cancelar" onsubmit="return confirm('¿Cancelar esta reserva pendiente?')">
-                        <?php Csrf::campo(); ?>
                         <input type="hidden" name="id" value="<?= (int) $reserva->id ?>">
                         <button type="submit" class="btn-sm btn-peligro">Cancelar</button>
                     </form>

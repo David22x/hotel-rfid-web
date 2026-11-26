@@ -3,8 +3,6 @@
 require_once __DIR__ . '/../service/ReservaService.php';
 require_once __DIR__ . '/../service/HuespedService.php';
 require_once __DIR__ . '/../service/HabitacionService.php';
-require_once __DIR__ . '/../core/Csrf.php';
-require_once __DIR__ . '/../core/ReglaNegocioException.php';
 
 class ReservaController
 {
@@ -21,7 +19,7 @@ class ReservaController
 
     public function atender(): void
     {
-        Sesion::exigirPermiso('RESERVAS');
+        exigirPermiso('RESERVAS');
         $accion = $_GET['accion'] ?? 'listar';
 
         if ($accion === 'crear' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,7 +36,6 @@ class ReservaController
     private function crear(): void
     {
         try {
-            Csrf::validar();
             $entrada = trim($_POST['fecha_entrada'] ?? '');
             $salida = trim($_POST['fecha_salida'] ?? '');
 
@@ -64,7 +61,6 @@ class ReservaController
     private function cancelar(): void
     {
         try {
-            Csrf::validar();
             $this->service->cancelar((int) ($_POST['id'] ?? 0));
             $this->redirigir('mensaje', 'Reserva cancelada correctamente.');
         } catch (Throwable $error) {

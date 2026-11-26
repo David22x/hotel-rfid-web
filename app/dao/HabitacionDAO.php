@@ -1,14 +1,14 @@
 <?php
 
-require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../model/Habitacion.php';
 
 class HabitacionDAO
 {
     public function listar(): array
     {
-        $consulta = Database::conectar()->prepare(
-            'SELECT id, numero, piso, tipo, estado FROM habitacion ORDER BY CAST(numero AS UNSIGNED), numero'
+        $consulta = conectar()->prepare(
+            'SELECT id, numero, piso, tipo, estado FROM habitacion ORDER BY LENGTH(numero), numero'
         );
         $consulta->execute();
         return array_map([$this, 'hidratar'], $consulta->fetchAll());
@@ -16,8 +16,19 @@ class HabitacionDAO
 
     public function buscarPorId(int $id): ?Habitacion
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT id, numero, piso, tipo, estado FROM habitacion WHERE id = ?'
+        );
+        $consulta->execute([$id]);
+        $fila = $consulta->fetch();
+        return $fila === false ? null : $this->hidratar($fila);
+    }
+
+    // Bloquea la fila hasta terminar la transacción
+    public function buscarParaActualizar(int $id): ?Habitacion
+    {
+        $consulta = conectar()->prepare(
+            'SELECT id, numero, piso, tipo, estado FROM habitacion WHERE id = ? FOR UPDATE'
         );
         $consulta->execute([$id]);
         $fila = $consulta->fetch();
@@ -26,7 +37,7 @@ class HabitacionDAO
 
     public function buscarPorNumero(string $numero): ?Habitacion
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'SELECT id, numero, piso, tipo, estado FROM habitacion WHERE numero = ?'
         );
         $consulta->execute([$numero]);
@@ -36,7 +47,7 @@ class HabitacionDAO
 
     public function crear(Habitacion $habitacion): int
     {
-        $conexion = Database::conectar();
+        $conexion = conectar();
         $consulta = $conexion->prepare(
             'INSERT INTO habitacion (numero, piso, tipo, estado) VALUES (?, ?, ?, ?)'
         );
@@ -46,12 +57,12 @@ class HabitacionDAO
             $habitacion->tipo,
             $habitacion->estado,
         ]);
-        return (int) $conexion->lastInsertId();
+        return ultimoId($conexion, 'habitacion');
     }
 
     public function actualizar(Habitacion $habitacion): void
     {
-        $consulta = Database::conectar()->prepare(
+        $consulta = conectar()->prepare(
             'UPDATE habitacion SET numero = ?, piso = ?, tipo = ?, estado = ? WHERE id = ?'
         );
         $consulta->execute([
@@ -65,13 +76,13 @@ class HabitacionDAO
 
     public function actualizarEstado(int $id, string $estado): void
     {
-        $consulta = Database::conectar()->prepare('UPDATE habitacion SET estado = ? WHERE id = ?');
+        $consulta = conectar()->prepare('UPDATE habitacion SET estado = ? WHERE id = ?');
         $consulta->execute([$estado, $id]);
     }
 
     public function eliminar(int $id): void
     {
-        $consulta = Database::conectar()->prepare('DELETE FROM habitacion WHERE id = ?');
+        $consulta = conectar()->prepare('DELETE FROM habitacion WHERE id = ?');
         $consulta->execute([$id]);
     }
 

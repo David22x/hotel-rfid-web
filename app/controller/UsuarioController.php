@@ -1,4 +1,3 @@
-
 <?php
 
 require_once __DIR__ . '/../service/UsuarioService.php';
@@ -14,7 +13,7 @@ class UsuarioController
 
     public function manejar(): void
     {
-        Sesion::exigirPermiso('GESTION_USUARIOS');
+        exigirPermiso('GESTION_USUARIOS');
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->procesar();
@@ -45,8 +44,6 @@ class UsuarioController
     private function procesar(): void
     {
         try {
-            Csrf::validar();
-
             $accion = $this->texto('accion');
             $id = filter_var(
                 $_POST['id'] ?? null,
@@ -54,7 +51,7 @@ class UsuarioController
                 ['options' => ['min_range' => 1]]
             );
 
-            $actual = Sesion::usuario();
+            $actual = usuarioActual();
             $administradorActual = (int) $actual['id'];
 
             switch ($accion) {
@@ -76,10 +73,6 @@ class UsuarioController
                         $this->texto('rol'),
                         $administradorActual
                     );
-                    if ($id === $administradorActual) {
-                        $_SESSION['usuario']['usuario'] =
-                        trim($this->texto('usuario'));
-                        }    
                     $mensaje = 'Usuario actualizado correctamente.';
                     break;
 
@@ -114,20 +107,18 @@ class UsuarioController
                     break;
 
                 default:
-                    throw new ReglaNegocioException(
-                        'La operación solicitada no es válida.'
-                    );
+                    throw new Exception('La operación solicitada no es válida.');
             }
 
             $_SESSION['mensaje'] = $mensaje;
 
-        } catch (ReglaNegocioException $e) {
-            $_SESSION['error'] = $e->getMessage();
-
         } catch (Throwable $e) {
-            error_log($e->getMessage());
-            $_SESSION['error'] =
-                'No fue posible completar la operación.';
+            if (get_class($e) === 'Exception') {
+                $_SESSION['error'] = $e->getMessage();
+            } else {
+                error_log($e->getMessage());
+                $_SESSION['error'] = 'No fue posible completar la operación.';
+            }
         }
 
         header('Location: ' . BASE_URL . '/usuarios.php');
@@ -139,9 +130,7 @@ class UsuarioController
         $valor = $_POST[$campo] ?? '';
 
         if (!is_string($valor)) {
-            throw new ReglaNegocioException(
-                'Los datos enviados no son válidos.'
-            );
+            throw new Exception('Los datos enviados no son válidos.');
         }
 
         return $valor;
@@ -150,9 +139,7 @@ class UsuarioController
     private function exigirId($id): void
     {
         if (!is_int($id) || $id < 1) {
-            throw new ReglaNegocioException(
-                'Seleccione un usuario válido.'
-            );
+            throw new Exception('Seleccione un usuario válido.');
         }
     }
 }

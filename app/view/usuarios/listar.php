@@ -1,8 +1,4 @@
-
 <?php
-/** @var Usuario[] $usuarios */
-/** @var string $mensaje */
-/** @var string $error */
 $tituloPagina = 'Gestión de usuarios';
 $activo = 'usuarios';
 $estrecho = false;
@@ -13,23 +9,12 @@ require __DIR__ . '/../layout/inicio.php';
 <h1>Gestión de usuarios</h1>
 <p>Administración de cuentas del sistema Hotel RFID.</p>
 
-<?php if ($mensaje !== ''): ?>
-    <div class="alerta ok">
-        <?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?>
-    </div>
-<?php endif; ?>
-
-<?php if ($error !== ''): ?>
-    <div class="alerta error">
-        <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
-    </div>
-<?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
 <section>
     <h2>Crear usuario</h2>
 
     <form method="post" action="usuarios.php">
-        <?php Csrf::campo(); ?>
         <input type="hidden" name="accion" value="crear">
 
         <p>
@@ -95,7 +80,6 @@ require __DIR__ . '/../layout/inicio.php';
 
             <td>
                 <form method="post" action="usuarios.php">
-                    <?php Csrf::campo(); ?>
                     <input type="hidden" name="accion" value="editar">
                     <input type="hidden" name="id"
                            value="<?= (int) $u->id ?>">
@@ -122,7 +106,6 @@ require __DIR__ . '/../layout/inicio.php';
 
             <td>
                 <form method="post" action="usuarios.php">
-                    <?php Csrf::campo(); ?>
                     <input type="hidden" name="accion" value="password">
                     <input type="hidden" name="id"
                            value="<?= (int) $u->id ?>">
@@ -137,10 +120,9 @@ require __DIR__ . '/../layout/inicio.php';
             </td>
 
             <td>
-                <?php if ((int) $u->id !== (int) Sesion::usuario()['id']): ?>
+                <?php if ((int) $u->id !== (int) usuarioActual()['id']): ?>
 
                     <form method="post" action="usuarios.php">
-                        <?php Csrf::campo(); ?>
                         <input type="hidden" name="accion" value="estado">
                         <input type="hidden" name="id"
                                value="<?= (int) $u->id ?>">
@@ -152,7 +134,6 @@ require __DIR__ . '/../layout/inicio.php';
 
                     <form method="post" action="usuarios.php"
                           onsubmit="return confirm('¿Eliminar este usuario?');">
-                        <?php Csrf::campo(); ?>
                         <input type="hidden" name="accion" value="eliminar">
                         <input type="hidden" name="id"
                                value="<?= (int) $u->id ?>">

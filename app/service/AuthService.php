@@ -1,8 +1,6 @@
-
 <?php
 
 require_once __DIR__ . '/../dao/UsuarioDAO.php';
-require_once __DIR__ . '/../core/ReglaNegocioException.php';
 
 class AuthService
 {
@@ -18,9 +16,7 @@ class AuthService
         $usuario = trim($usuario);
 
         if ($usuario === '' || $password === '') {
-            throw new ReglaNegocioException(
-                'Ingrese usuario y contraseña.'
-            );
+            throw new Exception('Ingrese usuario y contraseña.');
         }
 
         $encontrado = $this->usuarioDAO->buscarPorUsuario($usuario);
@@ -28,10 +24,7 @@ class AuthService
         if ($encontrado === null ||
             !$encontrado->activo ||
             !password_verify($password, $encontrado->passwordHash)) {
-
-            throw new ReglaNegocioException(
-                'Usuario o contraseña incorrectos.'
-            );
+            throw new Exception('Usuario o contraseña incorrectos.');
         }
 
         return $encontrado;

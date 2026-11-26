@@ -4,8 +4,6 @@ require_once __DIR__ . '/../dao/ReservaDAO.php';
 require_once __DIR__ . '/../dao/HuespedDAO.php';
 require_once __DIR__ . '/../dao/HabitacionDAO.php';
 require_once __DIR__ . '/../model/Reserva.php';
-require_once __DIR__ . '/../model/EstadoReserva.php';
-require_once __DIR__ . '/../core/ReglaNegocioException.php';
 
 class ReservaService
 {
@@ -38,16 +36,16 @@ class ReservaService
     public function crear(int $huespedId, int $habitacionId, string $entrada, string $salida): Reserva
     {
         if ($huespedId <= 0) {
-            throw new ReglaNegocioException('Seleccione un huésped válido.');
+            throw new Exception('Seleccione un huésped válido.');
         }
         if ($habitacionId <= 0) {
-            throw new ReglaNegocioException('Seleccione una habitación válida.');
+            throw new Exception('Seleccione una habitación válida.');
         }
         if ($this->huespedDao->buscarPorId($huespedId) === null) {
-            throw new ReglaNegocioException('El huésped seleccionado no existe.');
+            throw new Exception('El huésped seleccionado no existe.');
         }
         if ($this->habitacionDao->buscarPorId($habitacionId) === null) {
-            throw new ReglaNegocioException('La habitación seleccionada no existe.');
+            throw new Exception('La habitación seleccionada no existe.');
         }
 
         $entradaTime = $this->leerFechaHora($entrada, 'entrada');
@@ -55,13 +53,13 @@ class ReservaService
         $ahora = time();
 
         if ($entradaTime < $ahora) {
-            throw new ReglaNegocioException('La fecha y hora de entrada no pueden estar en el pasado.');
+            throw new Exception('La fecha y hora de entrada no pueden estar en el pasado.');
         }
         if ($salidaTime <= $entradaTime) {
-            throw new ReglaNegocioException('La salida debe ser posterior a la entrada.');
+            throw new Exception('La salida debe ser posterior a la entrada.');
         }
         if ($this->reservaDao->hayCruce($habitacionId, date('Y-m-d H:i:s', $entradaTime), date('Y-m-d H:i:s', $salidaTime))) {
-            throw new ReglaNegocioException('La habitación ya tiene una reserva activa o pendiente que se cruza con ese horario.');
+            throw new Exception('La habitación ya tiene una reserva activa o pendiente que se cruza con ese horario.');
         }
 
         $reserva = new Reserva(
@@ -78,24 +76,24 @@ class ReservaService
     {
         $reserva = $this->reservaDao->buscarPorId($id);
         if ($reserva === null) {
-            throw new ReglaNegocioException('La reserva no existe.');
+            throw new Exception('La reserva no existe.');
         }
-        if ($reserva->estado !== EstadoReserva::PENDIENTE) {
-            throw new ReglaNegocioException('Solo se pueden cancelar reservas pendientes.');
+        if ($reserva->estado !== 'PENDIENTE') {
+            throw new Exception('Solo se pueden cancelar reservas pendientes.');
         }
-        $this->reservaDao->actualizarEstado($id, EstadoReserva::CANCELADA);
+        $this->reservaDao->actualizarEstado($id, 'CANCELADA');
     }
 
     private function leerFechaHora(string $valor, string $tipo): int
     {
         $valor = trim($valor);
-        $fecha = DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $valor);
+        $fecha = date_create_immutable_from_format('Y-m-d\TH:i', $valor);
         if ($fecha === false) {
-            throw new ReglaNegocioException('La fecha y hora de ' . $tipo . ' no tienen un formato válido.');
+            throw new Exception('La fecha y hora de ' . $tipo . ' no tienen un formato válido.');
         }
-        $errores = DateTimeImmutable::getLastErrors();
+        $errores = date_get_last_errors();
         if (is_array($errores) && ($errores['warning_count'] > 0 || $errores['error_count'] > 0)) {
-            throw new ReglaNegocioException('La fecha y hora de ' . $tipo . ' no existen.');
+            throw new Exception('La fecha y hora de ' . $tipo . ' no existen.');
         }
         return $fecha->getTimestamp();
     }
