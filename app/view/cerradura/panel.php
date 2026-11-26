@@ -41,21 +41,10 @@ require __DIR__ . '/../layout/inicio.php';
         <p>Último evento: <span id="lblUltimo"><?= htmlspecialchars($ultimoEvento) ?></span></p>
     </div>
 
-    <fieldset>
-        <legend>Lector RFID</legend>
-        <button type="button" id="btnConectar" class="btn" onclick="conectarLector()">Conectar lector</button>
-        <span id="lblLector">Lector desconectado</span>
-    </fieldset>
-
-    <fieldset>
-        <legend>Simulador</legend>
-        <label for="txtUid">UID de la tarjeta</label>
-        <input type="text" id="txtUid" maxlength="20" placeholder="A3F1C20B">
-        <button type="button" class="btn btn-primario" onclick="simularLectura()">Simular lectura</button>
-    </fieldset>
+    <!-- Botón para conectar el lector y simulador, hechos por Michael -->
+    <?php require __DIR__ . '/../lector/controles.php'; ?>
 <?php endif; ?>
 
 <script src="assets/js/jquery.min.js"></script>
-<script src="assets/js/lector-rfid.js"></script>
 <script src="assets/js/cerradura.js"></script>
 <?php require __DIR__ . '/../layout/fin.php'; ?>

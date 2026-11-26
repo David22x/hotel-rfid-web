@@ -1,8 +1,6 @@
 // Pantalla de la cerradura RFID.
 // Usa $.post de jQuery para validar la tarjeta sin recargar la página.
 
-var lectorConectado = false;
-
 // Envía el UID al servidor, que revisa las 5 reglas y responde en JSON
 function validarTarjeta(uid) {
     var datos = {
@@ -20,10 +18,9 @@ function validarTarjeta(uid) {
         mostrarResultado(respuesta);
         document.getElementById("lblUltimo").innerText = respuesta.ultimoEvento;
 
-        // Con el lector real se responde OK o NO al Arduino para encender el LED
-        if (lectorConectado) {
-            LectorRFID.enviar(respuesta.respuesta);
-        }
+        // Responde OK o NO al Arduino para encender el LED verde o rojo.
+        // Si no hay lector conectado (simulador), no hace nada.
+        LectorRFID.enviar(respuesta.respuesta);
     }, "json");
 }
 
@@ -50,27 +47,7 @@ function mostrarEsperando() {
     document.getElementById("lblDetalle").innerText = "";
 }
 
-// Botón "Simular lectura": revisa el formato antes de enviarlo
-function simularLectura() {
-    var uid = document.getElementById("txtUid").value.trim().toUpperCase();
-
-    if (!/^[0-9A-F]{4,20}$/.test(uid)) {
-        alert("Escriba un UID hexadecimal válido, por ejemplo A3F1C20B.");
-        return;
-    }
-    validarTarjeta(uid);
-}
-
-// Botón "Conectar lector": usa lector-rfid.js, que hace Michael.
-// Cada UID que llega del Arduino se valida igual que en el simulador.
-function conectarLector() {
-    if (typeof LectorRFID === "undefined") {
-        alert("Todavía no está el archivo lector-rfid.js. Use el simulador.");
-        return;
-    }
-
-    LectorRFID.conectar(validarTarjeta);
-    lectorConectado = true;
-    document.getElementById("lblLector").innerText = "Lector conectado";
-    document.getElementById("btnConectar").disabled = true;
+// Cada UID que llega del lector o del simulador de Michael se valida en el servidor
+if (document.getElementById("csrf")) {
+    prepararLector(validarTarjeta);
 }

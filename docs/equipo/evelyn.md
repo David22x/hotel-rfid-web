@@ -20,6 +20,6 @@ Responsable de la cerradura RFID y la bitácora de Hotel RFID Web.
 
 ## Para el equipo
 
-- **Michael:** `cerradura.js` usa `LectorRFID.conectar(alLeerUid)` y `LectorRFID.enviar(texto)` de `lector-rfid.js`. Cada UID leído se pasa a la función que recibe `conectar`.
+- **Michael:** la cerradura usa sus controles de `app/view/lector/controles.php` y llama `prepararLector(validarTarjeta)`. Con la respuesta del servidor envía `OK` o `NO` con `LectorRFID.enviar(...)`.
 - **Martin:** la cerradura acepta el mismo formato de UID que el check-in (4 a 20 caracteres hexadecimales). La bitácora conserva tu tabla y le agrega los filtros y el botón del PDF.
 - **David:** `cron/expirar_llaves.php` usa `listarActivasVencidas` y `marcarVencida`, y solo registra `LLAVE_VENCIDA` cuando la llave cambió de estado. Ya se puede activar como indica `docs/despliegue.md`.
