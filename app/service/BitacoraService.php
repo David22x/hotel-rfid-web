@@ -17,7 +17,7 @@ class BitacoraService
     public function listar(string $desde, string $hasta, string $habitacion): array
     {
         if ($desde !== '' && $hasta !== '' && $desde > $hasta) {
-            throw new ReglaNegocioException('La fecha inicial no puede ser mayor que la fecha final.');
+            throw new Exception('La fecha inicial no puede ser mayor que la fecha final.');
         }
 
         $fechaDesde = null;

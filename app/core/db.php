@@ -19,10 +19,11 @@ function conectar(): PDO
 
         if (driverBd() === 'pgsql') {
             $dsn .= ';sslmode=' . (defined('DB_SSLMODE') ? DB_SSLMODE : 'require');
-            $zona = "SET TIME ZONE '-05:00'";
+            $zona = "SET TIME ZONE '" . ZONA_HORARIA . "'";
         } else {
             $dsn .= ';charset=utf8mb4';
-            $zona = "SET time_zone = '-05:00'";
+            $desfase = date_create('now', timezone_open(ZONA_HORARIA))->format('P');
+            $zona = "SET time_zone = '" . $desfase . "'";
         }
 
         $conexion = new PDO($dsn, DB_USER, DB_PASS);

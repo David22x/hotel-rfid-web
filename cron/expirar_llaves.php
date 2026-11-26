@@ -1,13 +1,10 @@
 <?php
 
 // Tarea programada: marca como vencidas las llaves caducadas
-require_once __DIR__ . '/../app/config/config.php';
-require_once __DIR__ . '/../app/core/db.php';
+require_once __DIR__ . '/../app/bootstrap.php';
 require_once __DIR__ . '/../app/dao/LlaveDAO.php';
 require_once __DIR__ . '/../app/dao/ReservaDAO.php';
 require_once __DIR__ . '/../app/dao/EventoDAO.php';
-
-date_default_timezone_set(ZONA_HORARIA);
 
 $llaveDao = new LlaveDAO();
 $reservaDao = new ReservaDAO();

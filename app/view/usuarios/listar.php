@@ -9,17 +9,7 @@ require __DIR__ . '/../layout/inicio.php';
 <h1>Gestión de usuarios</h1>
 <p>Administración de cuentas del sistema Hotel RFID.</p>
 
-<?php if ($mensaje !== ''): ?>
-    <div class="alerta ok">
-        <?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?>
-    </div>
-<?php endif; ?>
-
-<?php if ($error !== ''): ?>
-    <div class="alerta error">
-        <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
-    </div>
-<?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
 <section>
     <h2>Crear usuario</h2>

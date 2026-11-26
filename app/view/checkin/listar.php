@@ -5,12 +5,7 @@ require __DIR__ . '/../layout/inicio.php';
 ?>
 <h1>Check-In / Check-Out</h1>
 
-<?php if ($mensaje): ?>
-    <div class="alerta ok"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div>
-<?php endif; ?>
-<?php if ($error): ?>
-    <div class="alerta error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
-<?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
 <h2>Check-in</h2>
 <?php require __DIR__ . '/../lector/controles.php'; ?>

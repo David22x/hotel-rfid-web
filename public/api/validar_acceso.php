@@ -25,8 +25,7 @@ try {
     $respuesta['ultimoEvento'] = $bitacora->describirUltimo($habitacionId);
 
     echo json_encode($respuesta);
-} catch (ReglaNegocioException $e) {
-    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
 } catch (Exception $e) {
-    echo json_encode(['ok' => false, 'error' => 'Error al validar la tarjeta.']);
+    $error = get_class($e) === 'Exception' ? $e->getMessage() : 'Error al validar la tarjeta.';
+    echo json_encode(['ok' => false, 'error' => $error]);
 }

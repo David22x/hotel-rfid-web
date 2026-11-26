@@ -8,9 +8,7 @@ require __DIR__ . '/../layout/inicio.php';
 <h1>Cerradura RFID</h1>
 <p>Elija la puerta y acerque una tarjeta al lector, o escriba su UID en el simulador.</p>
 
-<?php if ($error): ?>
-    <div class="alerta error"><?= htmlspecialchars($error) ?></div>
-<?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
 <?php if (count($habitaciones) === 0): ?>
     <p class="vacio">No hay habitaciones registradas.</p>

@@ -107,18 +107,18 @@ class UsuarioController
                     break;
 
                 default:
-                    throw new ReglaNegocioException('La operación solicitada no es válida.');
+                    throw new Exception('La operación solicitada no es válida.');
             }
 
             $_SESSION['mensaje'] = $mensaje;
 
-        } catch (ReglaNegocioException $e) {
-            $_SESSION['error'] = $e->getMessage();
-
         } catch (Throwable $e) {
-            error_log($e->getMessage());
-            $_SESSION['error'] =
-                'No fue posible completar la operación.';
+            if (get_class($e) === 'Exception') {
+                $_SESSION['error'] = $e->getMessage();
+            } else {
+                error_log($e->getMessage());
+                $_SESSION['error'] = 'No fue posible completar la operación.';
+            }
         }
 
         header('Location: ' . BASE_URL . '/usuarios.php');
@@ -130,7 +130,7 @@ class UsuarioController
         $valor = $_POST[$campo] ?? '';
 
         if (!is_string($valor)) {
-            throw new ReglaNegocioException('Los datos enviados no son válidos.');
+            throw new Exception('Los datos enviados no son válidos.');
         }
 
         return $valor;
@@ -139,7 +139,7 @@ class UsuarioController
     private function exigirId($id): void
     {
         if (!is_int($id) || $id < 1) {
-            throw new ReglaNegocioException('Seleccione un usuario válido.');
+            throw new Exception('Seleccione un usuario válido.');
         }
     }
 }

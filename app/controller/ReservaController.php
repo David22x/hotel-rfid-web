@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../service/ReservaService.php';
 require_once __DIR__ . '/../service/HuespedService.php';
 require_once __DIR__ . '/../service/HabitacionService.php';
-require_once __DIR__ . '/../core/ReglaNegocioException.php';
 
 class ReservaController
 {

@@ -7,9 +7,7 @@ require __DIR__ . '/../layout/inicio.php';
 
     <h1>Bitácora</h1>
 
-    <?php if ($error): ?>
-        <div class="alerta error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
     <form method="get" action="bitacora.php" class="filtros">
         <div class="campo">

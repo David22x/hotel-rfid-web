@@ -18,8 +18,8 @@ $habitacion = trim($_GET['habitacion'] ?? '');
 $bitacora = new BitacoraService();
 try {
     $eventos = $bitacora->listar($desde, $hasta, $habitacion);
-} catch (ReglaNegocioException $e) {
-    exit($e->getMessage());
+} catch (Exception $e) {
+    exit(get_class($e) === 'Exception' ? $e->getMessage() : 'No se pudo generar el reporte.');
 }
 
 $rango = ($desde === '' ? 'el inicio' : date('d/m/Y', strtotime($desde)))

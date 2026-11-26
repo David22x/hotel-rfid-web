@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../service/OperacionHotelService.php';
 require_once __DIR__ . '/../service/ReservaService.php';
-require_once __DIR__ . '/../core/ReglaNegocioException.php';
 
 class CheckInOutController
 {

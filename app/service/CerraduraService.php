@@ -27,10 +27,10 @@ class CerraduraService
         $ahora = date('Y-m-d H:i:s');
 
         if (!preg_match('/^[0-9A-F]{4,20}$/', $uid)) {
-            throw new ReglaNegocioException('Escriba un UID hexadecimal válido, por ejemplo A3F1C20B.');
+            throw new Exception('Escriba un UID hexadecimal válido, por ejemplo A3F1C20B.');
         }
         if ($this->habitacionDao->buscarPorId($habitacionId) === null) {
-            throw new ReglaNegocioException('Seleccione una habitación válida.');
+            throw new Exception('Seleccione una habitación válida.');
         }
 
         $resultado = $this->aplicarReglas($uid, $habitacionId, $ahora);

@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../core/db.php';
-require_once __DIR__ . '/../core/ReglaNegocioException.php';
 require_once __DIR__ . '/../dao/ReservaDAO.php';
 require_once __DIR__ . '/../dao/HabitacionDAO.php';
 require_once __DIR__ . '/../dao/LlaveDAO.php';
@@ -30,7 +29,7 @@ class OperacionHotelService
         $uid = strtoupper(trim($uid));
         if (!preg_match('/^[A-F0-9]{4,20}$/', $uid)) {
             $this->registrarFallo('CHECK_IN', null, $uid, 'UID_INVALIDO', 'El UID debe tener entre 4 y 20 caracteres hexadecimales.');
-            throw new ReglaNegocioException('El UID debe tener entre 4 y 20 caracteres hexadecimales.');
+            throw new Exception('El UID debe tener entre 4 y 20 caracteres hexadecimales.');
         }
 
         $conexion = conectar();
@@ -44,20 +43,20 @@ class OperacionHotelService
             $consulta->execute([$reservaId]);
             $fila = $consulta->fetch();
             if ($fila === false) {
-                throw new ReglaNegocioException('La reserva no existe.');
+                throw new Exception('La reserva no existe.');
             }
             if ($fila['estado'] !== 'PENDIENTE') {
-                throw new ReglaNegocioException('Solo se puede hacer check-in de una reserva pendiente.');
+                throw new Exception('Solo se puede hacer check-in de una reserva pendiente.');
             }
 
             $ahora = new DateTimeImmutable();
             $entrada = new DateTimeImmutable($fila['fecha_entrada']);
             $salida = new DateTimeImmutable($fila['fecha_salida']);
             if ($ahora < $entrada->modify('-2 hours')) {
-                throw new ReglaNegocioException('Aún no corresponde el horario de check-in de esta reserva.');
+                throw new Exception('Aún no corresponde el horario de check-in de esta reserva.');
             }
             if ($ahora > $salida) {
-                throw new ReglaNegocioException('El horario de la reserva ya venció.');
+                throw new Exception('El horario de la reserva ya venció.');
             }
 
             $habitacionId = (int) $fila['habitacion_id'];
@@ -67,10 +66,10 @@ class OperacionHotelService
             $consultaHabitacion->execute([$habitacionId]);
             $habitacion = $consultaHabitacion->fetch();
             if ($habitacion === false) {
-                throw new ReglaNegocioException('La habitación no existe.');
+                throw new Exception('La habitación no existe.');
             }
             if ($habitacion['estado'] !== 'LIBRE') {
-                throw new ReglaNegocioException('La habitación no está disponible para check-in.');
+                throw new Exception('La habitación no está disponible para check-in.');
             }
 
             $consultaLlave = $conexion->prepare(
@@ -78,7 +77,7 @@ class OperacionHotelService
             );
             $consultaLlave->execute([$uid, 'ACTIVA']);
             if ($consultaLlave->fetch() !== false) {
-                throw new ReglaNegocioException('La tarjeta ya tiene una llave activa.');
+                throw new Exception('La tarjeta ya tiene una llave activa.');
             }
 
             $actualizarReserva = $conexion->prepare('UPDATE reserva SET estado = ? WHERE id = ?');
@@ -135,7 +134,7 @@ class OperacionHotelService
                 'FALLO',
                 $error instanceof Exception ? $error->getMessage() : 'Error inesperado durante el check-in.'
             );
-            if ($error instanceof ReglaNegocioException) {
+            if (get_class($error) === 'Exception') {
                 throw $error;
             }
             throw new RuntimeException('No se pudo completar el check-in. Los cambios fueron revertidos.');
@@ -154,10 +153,10 @@ class OperacionHotelService
             $consulta->execute([$reservaId]);
             $fila = $consulta->fetch();
             if ($fila === false) {
-                throw new ReglaNegocioException('La reserva no existe.');
+                throw new Exception('La reserva no existe.');
             }
             if ($fila['estado'] !== 'ACTIVA') {
-                throw new ReglaNegocioException('Solo se puede hacer check-out de una reserva activa.');
+                throw new Exception('Solo se puede hacer check-out de una reserva activa.');
             }
 
             $habitacionId = (int) $fila['habitacion_id'];
@@ -167,7 +166,7 @@ class OperacionHotelService
             $consultaHabitacion->execute([$habitacionId]);
             $habitacion = $consultaHabitacion->fetch();
             if ($habitacion === false) {
-                throw new ReglaNegocioException('La habitación no existe.');
+                throw new Exception('La habitación no existe.');
             }
 
             $actualizarReserva = $conexion->prepare('UPDATE reserva SET estado = ? WHERE id = ?');
@@ -212,7 +211,7 @@ class OperacionHotelService
                 'FALLO',
                 $error instanceof Exception ? $error->getMessage() : 'Error inesperado durante el check-out.'
             );
-            if ($error instanceof ReglaNegocioException) {
+            if (get_class($error) === 'Exception') {
                 throw $error;
             }
             throw new RuntimeException('No se pudo completar el check-out. Los cambios fueron revertidos.');

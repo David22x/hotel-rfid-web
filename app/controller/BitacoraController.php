@@ -26,10 +26,10 @@ class BitacoraController
         try {
             $habitaciones = $this->habitacionDao->listar();
             $eventos = $this->service->listar($filtros['desde'], $filtros['hasta'], $filtros['habitacion']);
-        } catch (ReglaNegocioException $e) {
-            $error = $e->getMessage();
         } catch (Throwable $e) {
-            $error = 'No se pudo cargar la bitácora: ' . $e->getMessage();
+            $error = get_class($e) === 'Exception'
+                ? $e->getMessage()
+                : 'No se pudo cargar la bitácora: ' . $e->getMessage();
         }
 
         $consultaReporte = 'desde=' . $filtros['desde'] . '&hasta=' . $filtros['hasta'] . '&habitacion=' . $filtros['habitacion'];

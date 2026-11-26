@@ -9,9 +9,7 @@ if (!$esModal) {
 ?>
     <h1><?= htmlspecialchars($titulo) ?></h1>
 
-    <?php if ($error): ?>
-        <div class="alerta error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
     <form method="post" action="" data-modal-form>
         <div class="campo">

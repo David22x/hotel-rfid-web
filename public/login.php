@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'] ?? '';
 
         if (!is_string($usuario) || !is_string($password)) {
-            throw new ReglaNegocioException('Datos de inicio de sesión no válidos.');
+            throw new Exception('Datos de inicio de sesión no válidos.');
         }
 
         $usuario = trim($usuario);
@@ -26,11 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         header('Location: ' . BASE_URL . '/menu.php');
         exit;
-    } catch (ReglaNegocioException $e) {
-        $error = $e->getMessage();
     } catch (Throwable $e) {
-        error_log($e->getMessage());
-        $error = 'No fue posible iniciar sesión. Intente nuevamente.';
+        if (get_class($e) === 'Exception') {
+            $error = $e->getMessage();
+        } else {
+            error_log($e->getMessage());
+            $error = 'No fue posible iniciar sesión. Intente nuevamente.';
+        }
     }
 }
 

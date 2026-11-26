@@ -5,12 +5,7 @@ require __DIR__ . '/../layout/inicio.php';
 ?>
     <h1>Huéspedes</h1>
 
-    <?php if ($mensaje): ?>
-        <div class="alerta ok"><?= htmlspecialchars($mensaje) ?></div>
-    <?php endif; ?>
-    <?php if ($error): ?>
-        <div class="alerta error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+<?php require __DIR__ . '/../layout/avisos.php'; ?>
 
     <div class="barra">
         <form method="get" action="huespedes.php">

@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../dao/UsuarioDAO.php';
-require_once __DIR__ . '/../core/ReglaNegocioException.php';
 
 class UsuarioService
 {
@@ -27,7 +26,7 @@ class UsuarioService
         $this->validarRol($rol);
 
         if ($this->dao->buscarPorUsuario($nombre) !== null) {
-            throw new ReglaNegocioException('El nombre de usuario ya existe.');
+            throw new Exception('El nombre de usuario ya existe.');
         }
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
@@ -56,12 +55,12 @@ class UsuarioService
         $duplicado = $this->dao->buscarPorUsuario($nombre);
 
         if ($duplicado !== null && $duplicado->id !== $id) {
-            throw new ReglaNegocioException('El nombre de usuario ya existe.');
+            throw new Exception('El nombre de usuario ya existe.');
         }
 
         if ($id === $administradorActual &&
             $rol !== 'ADMIN') {
-            throw new ReglaNegocioException('No puede quitarse su propio rol de administrador.');
+            throw new Exception('No puede quitarse su propio rol de administrador.');
         }
 
         if ($usuario->rol === 'ADMIN' &&
@@ -83,7 +82,7 @@ class UsuarioService
         $usuario = $this->obtener($id);
 
         if ($id === $administradorActual) {
-            throw new ReglaNegocioException('No puede desactivar su propia cuenta.');
+            throw new Exception('No puede desactivar su propia cuenta.');
         }
 
         if ($usuario->activo &&
@@ -116,7 +115,7 @@ class UsuarioService
         $usuario = $this->obtener($id);
 
         if ($id === $administradorActual) {
-            throw new ReglaNegocioException('No puede eliminar su propia cuenta.');
+            throw new Exception('No puede eliminar su propia cuenta.');
         }
 
         if ($usuario->rol === 'ADMIN' &&
@@ -134,7 +133,7 @@ class UsuarioService
             : null;
 
         if ($usuario === null) {
-            throw new ReglaNegocioException('El usuario seleccionado no existe.');
+            throw new Exception('El usuario seleccionado no existe.');
         }
 
         return $usuario;
@@ -145,7 +144,7 @@ class UsuarioService
         $nombre = trim($nombre);
 
         if ($nombre === '' || strlen($nombre) > 50) {
-            throw new ReglaNegocioException('El usuario debe tener entre 1 y 50 caracteres.');
+            throw new Exception('El usuario debe tener entre 1 y 50 caracteres.');
         }
 
         return $nombre;
@@ -154,11 +153,11 @@ class UsuarioService
     private function validarPassword(string $password): void
     {
         if (strlen($password) < 8) {
-            throw new ReglaNegocioException('La contraseña debe tener mínimo 8 caracteres.');
+            throw new Exception('La contraseña debe tener mínimo 8 caracteres.');
         }
 
         if (strlen($password) > 72) {
-            throw new ReglaNegocioException('La contraseña no debe superar 72 bytes.');
+            throw new Exception('La contraseña no debe superar 72 bytes.');
         }
     }
 
@@ -168,14 +167,14 @@ class UsuarioService
             'ADMIN',
             'RECEPCIONISTA'
         ], true)) {
-            throw new ReglaNegocioException('El rol seleccionado no es válido.');
+            throw new Exception('El rol seleccionado no es válido.');
         }
     }
 
     private function protegerUltimoAdmin(): void
     {
         if ($this->dao->contarAdministradoresActivos() <= 1) {
-            throw new ReglaNegocioException('Debe existir al menos un administrador activo.');
+            throw new Exception('Debe existir al menos un administrador activo.');
         }
     }
 }
