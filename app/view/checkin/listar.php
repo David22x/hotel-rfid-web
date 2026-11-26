@@ -32,7 +32,6 @@ require __DIR__ . '/../layout/inicio.php';
         <input id="uid" type="text" name="uid" maxlength="20" pattern="[A-Fa-f0-9]{8,20}" placeholder="Ej. A3F1C20B" required>
     </div>
     <div class="botones botones-formulario">
-        <span id="estado_lector" class="vacio" aria-live="polite"></span>
         <button type="submit" class="primario">Registrar check-in</button>
     </div>
 </form>

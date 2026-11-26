@@ -75,14 +75,3 @@ CREATE TABLE IF NOT EXISTS evento (
 );
 CREATE INDEX IF NOT EXISTS idx_evento_fecha ON evento (fecha_hora);
 CREATE INDEX IF NOT EXISTS idx_evento_habitacion_fecha ON evento (habitacion_id, fecha_hora);
-
--- Lecturas RFID enviadas por el lector de recepción; el formulario de
--- check-in las recoge una sola vez (consumida = 1) y caducan a los 60 s.
-CREATE TABLE IF NOT EXISTS lectura_rfid (
-    id SERIAL PRIMARY KEY,
-    uid VARCHAR(20) NOT NULL,
-    fecha_hora TIMESTAMP NOT NULL,
-    consumida SMALLINT NOT NULL DEFAULT 0,
-    CONSTRAINT chk_lectura_consumida CHECK (consumida IN (0, 1))
-);
-CREATE INDEX IF NOT EXISTS idx_lectura_pendiente ON lectura_rfid (consumida, fecha_hora);

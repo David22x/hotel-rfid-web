@@ -11,5 +11,3 @@ nbactions.xml
 # Sistema
 .DS_Store
 Thumbs.db
-# Configuración local del puente RFID
-arduino/puente.json

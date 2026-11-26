@@ -16,8 +16,7 @@ PHP, MySQL, HTML, CSS y JS. Patrón MVC + DAO, sin frameworks.
 - El módulo Reservas permite crear, listar y cancelar reservas pendientes.
 - El módulo Check-In / Check-Out activa y revoca llaves dentro de transacciones.
 - El lector RC522 + Arduino se conecta por USB al computador de recepción y el navegador
-  (Chrome o Edge) lo lee con la Web Serial API. Como alternativa, `arduino/puente_serial.py`
-  envía cada lectura al servidor local y a la nube a la vez.
+  (Chrome o Edge) lo lee con la Web Serial API, sin API local ni configuración en el servidor.
   Check-in incluye el botón **Simular lectura** para trabajar sin hardware. Ver
   [docs/hardware.md](docs/hardware.md).
 

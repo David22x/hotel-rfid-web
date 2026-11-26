@@ -16,7 +16,7 @@ if (MOSTRAR_ERRORES) {
 }
 
 // Iniciar la sesión una sola vez
-if (!defined('SIN_SESION') && session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 

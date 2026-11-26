@@ -2,10 +2,7 @@
 
 Responsable: Michael Rosillo.
 
-El Arduino va por USB al computador de recepción. Hay dos formas de leerlo (**solo una a la vez**, porque el puerto serial admite un único programa):
-
-1. **Puente desacoplado** (`arduino/puente_serial.py`): envía cada lectura al servidor local y a la nube. Ver [Puente local y nube](#puente-local-y-nube).
-2. **Navegador** (Chrome o Edge de escritorio) con la **Web Serial API** desde `public/assets/js/lector-rfid.js`: la lectura solo llega a la pantalla abierta, no se envía a otros servidores.
+El lector **no se conecta al servidor**. El Arduino va por USB al computador de recepción y el navegador (Chrome o Edge de escritorio) lee el puerto con la **Web Serial API** desde `public/assets/js/lector-rfid.js`.
 
 ```
 Tarjeta → RC522 → Arduino Uno → USB → Chrome/Edge (lector-rfid.js) → check-in / cerradura
@@ -102,22 +99,6 @@ prepararLector(async function (uid) {
     LectorRFID.enviar(resultado.permitido ? 'OK' : 'NO');
 });
 ```
-
-## Puente local y nube
-
-```
-Tarjeta → RC522 → Arduino → USB → puente_serial.py ─┬→ API local (XAMPP, MySQL)
-                                                    └→ API en Azure (PostgreSQL)
-```
-
-1. `pip install pyserial requests`
-2. Copiar `arduino/puente.example.json` como `arduino/puente.json` y ajustar puerto, modo y URLs.
-3. En cada servidor, tener la tabla `lectura_rfid` (`database/schema.sql` en MySQL, `database/schema_pgsql.sql` en PostgreSQL).
-4. `python arduino/puente_serial.py` (con `--detalle` para diagnosticar).
-
-Las rutas `api/lectura.php` y `api/acceso.php` no piden autenticación: cualquiera que conozca la URL puede enviarles lecturas.
-
-Cada servidor trabaja con sus propios datos. Un servidor que no responde se ignora sin avisar. En modo `checkin`, la pantalla de check-in abierta recibe el UID. En modo `cerradura`, el orden de `servidores` es la prioridad: decide el primero que conozca la tarjeta; `habitacion_id` se configura por servidor.
 
 ## Requisitos y problemas comunes
 
