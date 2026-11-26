@@ -27,10 +27,11 @@ require __DIR__ . '/../layout/inicio.php';
         </select>
     </div>
     <div class="campo">
-        <label for="uid">UID de tarjeta / lectura simulada</label>
+        <label for="uid">UID de tarjeta (lector RFID o lectura simulada)</label>
         <input id="uid" type="text" name="uid" maxlength="20" pattern="[A-Fa-f0-9]{4,20}" placeholder="Ej. A1B2C3D4" required>
     </div>
     <div class="botones botones-formulario">
+        <span id="estado_lector" class="vacio" aria-live="polite">Esperando tarjeta del lector…</span>
         <button type="button" id="simular_uid" class="btn">Generar lectura simulada</button>
         <button type="submit" class="primario">Registrar check-in</button>
     </div>
@@ -79,5 +80,24 @@ document.getElementById('simular_uid').addEventListener('click', function () {
     const bytes = crypto.getRandomValues(new Uint8Array(4));
     document.getElementById('uid').value = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 });
+
+// Recoge la lectura que el lector RFID envía a /api/lectura.php (una sola vez por tarjeta).
+(function () {
+    const campo = document.getElementById('uid');
+    const estado = document.getElementById('estado_lector');
+    async function consultar() {
+        try {
+            const r = await fetch(<?= json_encode(BASE_URL . '/api/ultima_lectura.php') ?>, { credentials: 'same-origin', cache: 'no-store' });
+            if (r.status === 401 || r.status === 403) { estado.textContent = 'Lector no disponible (sesión).'; return; }
+            const datos = await r.json();
+            if (datos.uid) {
+                campo.value = datos.uid;
+                estado.textContent = 'Tarjeta leída: ' + datos.uid;
+            }
+        } catch (e) { /* red caída: se reintenta en el próximo ciclo */ }
+        setTimeout(consultar, 1500);
+    }
+    consultar();
+})();
 </script>
 <?php require __DIR__ . '/../layout/fin.php'; ?>

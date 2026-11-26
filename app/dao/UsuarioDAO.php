@@ -55,7 +55,7 @@ class UsuarioDAO
         $consulta = $conexion->prepare('INSERT INTO usuario (usuario, password_hash, rol, activo) VALUES (?, ?, ?, ?)');
         $consulta->execute([$usuario->usuario, $usuario->passwordHash, $usuario->rol, (int) $usuario->activo]);
 
-        return (int) $conexion->lastInsertId();
+        return Database::ultimoId($conexion, 'usuario');
     }
 
     /**

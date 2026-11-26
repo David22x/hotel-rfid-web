@@ -8,7 +8,7 @@ class HabitacionDAO
     public function listar(): array
     {
         $consulta = Database::conectar()->prepare(
-            'SELECT id, numero, piso, tipo, estado FROM habitacion ORDER BY CAST(numero AS UNSIGNED), numero'
+            'SELECT id, numero, piso, tipo, estado FROM habitacion ORDER BY LENGTH(numero), numero'
         );
         $consulta->execute();
         return array_map([$this, 'hidratar'], $consulta->fetchAll());
@@ -46,7 +46,7 @@ class HabitacionDAO
             $habitacion->tipo,
             $habitacion->estado,
         ]);
-        return (int) $conexion->lastInsertId();
+        return Database::ultimoId($conexion, 'habitacion');
     }
 
     public function actualizar(Habitacion $habitacion): void

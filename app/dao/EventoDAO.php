@@ -20,7 +20,7 @@ class EventoDAO
             $evento->resultado,
             $evento->detalle,
         ]);
-        return (int) $conexion->lastInsertId();
+        return Database::ultimoId($conexion, 'evento');
     }
 
     public function registrar(

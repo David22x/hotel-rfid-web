@@ -77,7 +77,7 @@ class LlaveDAO
             $llave->validaHasta,
             $llave->estado,
         ]);
-        return (int) $conexion->lastInsertId();
+        return Database::ultimoId($conexion, 'llave');
     }
 
     public function revocarActivasPorReserva(int $reservaId): void

@@ -56,7 +56,7 @@ class HuespedDAO
             $huesped->correo,
             $huesped->telefono,
         ]);
-        return (int) $conexion->lastInsertId();
+        return Database::ultimoId($conexion, 'huesped');
     }
 
     public function actualizar(Huesped $huesped): void

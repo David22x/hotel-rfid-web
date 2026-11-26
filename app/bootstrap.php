@@ -1,4 +1,3 @@
-
 <?php
 
 // Configuración local del proyecto
@@ -17,7 +16,7 @@ if (MOSTRAR_ERRORES) {
 }
 
 // Iniciar la sesión una sola vez
-if (session_status() === PHP_SESSION_NONE) {
+if (!defined('SIN_SESION') && session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 

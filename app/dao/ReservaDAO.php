@@ -64,7 +64,7 @@ class ReservaDAO
             $reserva->fechaSalida,
             $reserva->estado,
         ]);
-        return (int) $conexion->lastInsertId();
+        return Database::ultimoId($conexion, 'reserva');
     }
 
     public function actualizar(Reserva $reserva): void
