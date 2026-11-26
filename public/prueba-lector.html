@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Prueba del lector RFID</title>
+    <link rel="stylesheet" href="assets/css/estilo.css">
+</head>
+<body>
+<!--
+    Página de prueba del lector RFID (Michael).
+    No necesita iniciar sesión ni toca la base de datos: solo lee el
+    Arduino desde el navegador. Sirve para comprobar el hardware en
+    localhost y en el dominio con HTTPS antes de usar check-in o cerradura.
+-->
+<div class="contenedor estrecho">
+    <h1>Prueba del lector RFID</h1>
+
+    <fieldset class="lector-rfid">
+        <legend>Lector RFID</legend>
+        <div class="lector-fila">
+            <button type="button" id="lector-conectar" class="btn">Conectar lector</button>
+            <span id="lector-estado" class="lector-estado">Lector sin conectar</span>
+        </div>
+        <div class="lector-fila">
+            <input type="text" id="lector-simular-uid" maxlength="20"
+                   placeholder="UID a simular, ej. A3F1C20B" autocomplete="off">
+            <button type="button" id="lector-simular" class="btn">Simular lectura</button>
+        </div>
+        <p id="lector-error" class="lector-error"></p>
+    </fieldset>
+
+    <div class="lector-fila">
+        <button type="button" id="enviar-ok" class="btn">Enviar OK (LED verde)</button>
+        <button type="button" id="enviar-no" class="btn">Enviar NO (LED rojo)</button>
+    </div>
+
+    <h2>Lecturas</h2>
+    <ul id="lecturas"></ul>
+</div>
+
+<script src="assets/js/lector-rfid.js"></script>
+<script>
+    // Cada UID leído (real o simulado) se agrega a la lista con la hora.
+    prepararLector(function (uid) {
+        const item = document.createElement('li');
+        item.textContent = new Date().toLocaleTimeString() + ' - ' + uid;
+        document.getElementById('lecturas').prepend(item);
+    });
+
+    document.getElementById('enviar-ok').addEventListener('click', function () {
+        LectorRFID.enviar('OK');
+    });
+    document.getElementById('enviar-no').addEventListener('click', function () {
+        LectorRFID.enviar('NO');
+    });
+</script>
+</body>
+</html>
