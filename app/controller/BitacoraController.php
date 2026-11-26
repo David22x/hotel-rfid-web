@@ -1,20 +1,50 @@
 <?php
 
-require_once __DIR__ . '/../dao/EventoDAO.php';
+require_once __DIR__ . '/../dao/HabitacionDAO.php';
+require_once __DIR__ . '/../service/BitacoraService.php';
 
 class BitacoraController
 {
+    private BitacoraService $service;
+    private HabitacionDAO $habitacionDao;
+
+    public function __construct()
+    {
+        $this->service = new BitacoraService();
+        $this->habitacionDao = new HabitacionDAO();
+    }
+
+    // Muestra la tabla de eventos con los filtros que llegan por GET
     public function atender(): void
     {
         Sesion::exigirPermiso('BITACORA');
-        $eventoDao = new EventoDAO();
+
+        $filtros = $this->leerFiltros();
         $eventos = [];
+        $habitaciones = [];
         $error = null;
+
         try {
-            $eventos = $eventoDao->listar();
+            $habitaciones = $this->habitacionDao->listar();
+            $eventos = $this->service->listar($filtros['desde'], $filtros['hasta'], $filtros['habitacion']);
+        } catch (ReglaNegocioException $e) {
+            $error = $e->getMessage();
         } catch (Throwable $e) {
             $error = 'No se pudo cargar la bitácora: ' . $e->getMessage();
         }
+
+        // Los mismos filtros se pasan al reporte PDF
+        $consultaReporte = 'desde=' . $filtros['desde'] . '&hasta=' . $filtros['hasta'] . '&habitacion=' . $filtros['habitacion'];
+
         require __DIR__ . '/../view/bitacora/listar.php';
+    }
+
+    private function leerFiltros(): array
+    {
+        return [
+            'desde' => trim($_GET['desde'] ?? ''),
+            'hasta' => trim($_GET['hasta'] ?? ''),
+            'habitacion' => trim($_GET['habitacion'] ?? ''),
+        ];
     }
 }

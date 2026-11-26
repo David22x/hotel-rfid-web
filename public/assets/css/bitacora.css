@@ -1,0 +1,11 @@
+/* Estilos de la pantalla de la bitácora */
+
+.filtros {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.tipo-ACCESO_CONCEDIDO { color: #2ea043; font-weight: bold; }
+.tipo-ACCESO_DENEGADO { color: #c82828; font-weight: bold; }
