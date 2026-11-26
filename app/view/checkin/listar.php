@@ -13,6 +13,7 @@ require __DIR__ . '/../layout/inicio.php';
 <?php endif; ?>
 
 <h2>Check-in</h2>
+<?php require __DIR__ . '/../lector/controles.php'; ?>
 <form method="post" action="checkin.php?accion=checkin" class="form-grid">
     <?php Csrf::campo(); ?>
     <div class="campo">
@@ -27,11 +28,10 @@ require __DIR__ . '/../layout/inicio.php';
         </select>
     </div>
     <div class="campo">
-        <label for="uid">UID de tarjeta / lectura simulada</label>
-        <input id="uid" type="text" name="uid" maxlength="20" pattern="[A-Fa-f0-9]{4,20}" placeholder="Ej. A1B2C3D4" required>
+        <label for="uid">UID de la tarjeta (se llena al leerla)</label>
+        <input id="uid" type="text" name="uid" maxlength="20" pattern="[A-Fa-f0-9]{8,20}" placeholder="Ej. A3F1C20B" required>
     </div>
     <div class="botones botones-formulario">
-        <button type="button" id="simular_uid" class="btn">Generar lectura simulada</button>
         <button type="submit" class="primario">Registrar check-in</button>
     </div>
 </form>
@@ -74,10 +74,5 @@ require __DIR__ . '/../layout/inicio.php';
     <p class="vacio">No hay reservas activas de check-out.</p>
 <?php endif; ?>
 
-<script>
-document.getElementById('simular_uid').addEventListener('click', function () {
-    const bytes = crypto.getRandomValues(new Uint8Array(4));
-    document.getElementById('uid').value = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-});
-</script>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/checkin.js"></script>
 <?php require __DIR__ . '/../layout/fin.php'; ?>
