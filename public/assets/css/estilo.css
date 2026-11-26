@@ -246,3 +246,10 @@ dialog h1 { font-size: 1.25rem; }
         padding: 0 12px;
     }
 }
+
+/* Lector RFID (controles de check-in y cerradura) */
+.lector-rfid { border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; }
+.lector-rfid legend { font-weight: 500; font-size: .9rem; padding: 0 6px; }
+.lector-fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+.lector-estado { font-size: .9rem; color: var(--suave); }
+.lector-error { color: var(--peligro); font-size: .85rem; margin: 0; min-height: 1em; }
